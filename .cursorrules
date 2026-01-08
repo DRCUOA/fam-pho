@@ -1,0 +1,5 @@
+Always reference the documentation in /documentation/Full_PID/00-project-initiation/ before suggesting new features. Adhere strictly to the 'Definition of Done' and 'Scope' defined in 01_Project-Charter.md.
+
+Always consider installed libraries before installing new ones.
+
+NEVER allow a installed library to be used if it has any npm critical vulnerabilites OR warnings about memory leakage
