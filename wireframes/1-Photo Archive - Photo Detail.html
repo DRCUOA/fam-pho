@@ -1,0 +1,180 @@
+
+                <html>
+                <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <header id="header" class="bg-white border-b border-neutral-200 px-4 py-3">
+  <div class="flex items-center justify-between">
+    <button class="p-2 text-neutral-600">
+      <i class="fa-solid fa-arrow-left text-lg"></i>
+    </button>
+    <h1 class="text-lg text-neutral-900">Photo Details</h1>
+    <button class="p-2 text-neutral-600">
+      <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
+    </button>
+  </div>
+</header>
+
+<main id="main" class="pb-20">
+  
+  <section id="photo-display" class="bg-black">
+    <div class="relative">
+      <div class="w-full h-80 bg-neutral-400 flex items-center justify-center">
+        <span class="text-white text-sm">Family Photo - Summer 1995</span>
+      </div>
+      <button class="absolute top-4 right-4 w-10 h-10 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+        <i class="fa-solid fa-expand text-white text-sm"></i>
+      </button>
+    </div>
+  </section>
+
+  <section id="photo-actions" class="px-4 py-4 bg-white border-b border-neutral-200">
+    <div class="flex space-x-3">
+      <button class="flex-1 bg-neutral-900 text-white rounded-lg py-3 px-4 flex items-center justify-center">
+        <i class="fa-solid fa-pen text-sm mr-2"></i>
+        <span class="text-sm">Edit Details</span>
+      </button>
+      <button class="w-12 h-12 bg-white border border-neutral-300 rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-share text-neutral-600"></i>
+      </button>
+      <button class="w-12 h-12 bg-white border border-neutral-300 rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-download text-neutral-600"></i>
+      </button>
+    </div>
+  </section>
+
+  <section id="photo-metadata" class="px-4 py-6">
+    <h3 class="text-base text-neutral-900 mb-4">Photo Information</h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white border border-neutral-200 rounded-lg p-4">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-sm text-neutral-500">Date Taken</span>
+          <button class="text-neutral-400">
+            <i class="fa-solid fa-pen text-xs"></i>
+          </button>
+        </div>
+        <span class="text-base text-neutral-900">July 15, 1995</span>
+      </div>
+
+      <div class="bg-white border border-neutral-200 rounded-lg p-4">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-sm text-neutral-500">Location</span>
+          <button class="text-neutral-400">
+            <i class="fa-solid fa-pen text-xs"></i>
+          </button>
+        </div>
+        <span class="text-base text-neutral-900">Grandma's Backyard</span>
+      </div>
+
+      <div class="bg-white border border-neutral-200 rounded-lg p-4">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-sm text-neutral-500">People</span>
+          <button class="text-neutral-400">
+            <i class="fa-solid fa-pen text-xs"></i>
+          </button>
+        </div>
+        <div class="space-y-2">
+          <span class="inline-block bg-neutral-100 text-neutral-700 px-3 py-1 rounded-full text-sm mr-2">Mom</span>
+          <span class="inline-block bg-neutral-100 text-neutral-700 px-3 py-1 rounded-full text-sm mr-2">Dad</span>
+          <span class="inline-block bg-neutral-100 text-neutral-700 px-3 py-1 rounded-full text-sm">Sarah</span>
+        </div>
+      </div>
+
+      <div class="bg-white border border-neutral-200 rounded-lg p-4">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-sm text-neutral-500">Description</span>
+          <button class="text-neutral-400">
+            <i class="fa-solid fa-pen text-xs"></i>
+          </button>
+        </div>
+        <span class="text-base text-neutral-900">Family BBQ at grandma's house. Everyone gathered for summer celebration.</span>
+      </div>
+
+      <div class="bg-white border border-neutral-200 rounded-lg p-4">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-sm text-neutral-500">Album</span>
+          <button class="text-neutral-400">
+            <i class="fa-solid fa-pen text-xs"></i>
+          </button>
+        </div>
+        <span class="text-base text-neutral-900">Summer 1995</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="technical-info" class="px-4 pb-6">
+    <h3 class="text-base text-neutral-900 mb-4">Technical Details</h3>
+    
+    <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span class="text-neutral-500 block">File Name</span>
+          <span class="text-neutral-900">IMG_0847.jpg</span>
+        </div>
+        <div>
+          <span class="text-neutral-500 block">File Size</span>
+          <span class="text-neutral-900">2.4 MB</span>
+        </div>
+        <div>
+          <span class="text-neutral-500 block">Resolution</span>
+          <span class="text-neutral-900">1920x1080</span>
+        </div>
+        <div>
+          <span class="text-neutral-500 block">Format</span>
+          <span class="text-neutral-900">JPEG</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200">
+  <div class="flex">
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-house text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Home</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-cloud-arrow-up text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Upload</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-list-check text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Triage</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center bg-neutral-50">
+      <i class="fa-solid fa-magnifying-glass text-lg text-neutral-900 block mb-1"></i>
+      <span class="text-xs text-neutral-900">Search</span>
+    </button>
+  </div>
+</nav>
+                        </body>
+                        </html>
+                        

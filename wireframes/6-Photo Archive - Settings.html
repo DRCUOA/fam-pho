@@ -1,0 +1,234 @@
+
+                <html>
+                <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <header id="header" class="bg-white border-b border-neutral-200 px-4 py-3">
+  <div class="flex items-center justify-between">
+    <button class="p-2 text-neutral-600">
+      <i class="fa-solid fa-arrow-left text-lg"></i>
+    </button>
+    <h1 class="text-lg text-neutral-900">Settings</h1>
+    <div class="w-10"></div>
+  </div>
+</header>
+
+<main id="main" class="px-4 py-6 pb-20">
+  
+  <section id="profile-section" class="mb-8">
+    <h2 class="text-base text-neutral-900 mb-4">Profile</h2>
+    
+    <div class="bg-white border border-neutral-200 rounded-lg p-4 mb-3">
+      <div class="flex items-center mb-4">
+        <img src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=8472" alt="Profile" class="w-16 h-16 rounded-full mr-4">
+        <div class="flex-1">
+          <p class="text-base text-neutral-900">Sarah Mitchell</p>
+          <p class="text-sm text-neutral-500">Family Organizer</p>
+        </div>
+      </div>
+      <button class="w-full bg-neutral-900 text-white rounded-lg py-3 text-sm">
+        Edit Profile
+      </button>
+    </div>
+  </section>
+
+  <section id="account-settings" class="mb-8">
+    <h2 class="text-base text-neutral-900 mb-4">Account</h2>
+    
+    <div class="space-y-3">
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-envelope text-lg mr-3 text-neutral-600"></i>
+          <div class="text-left">
+            <div class="text-sm text-neutral-900">Email</div>
+            <div class="text-xs text-neutral-500">sarah.mitchell@email.com</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+      
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-lock text-lg mr-3 text-neutral-600"></i>
+          <span class="text-sm text-neutral-900">Change Password</span>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+    </div>
+  </section>
+
+  <section id="preferences-section" class="mb-8">
+    <h2 class="text-base text-neutral-900 mb-4">Preferences</h2>
+    
+    <div class="space-y-3">
+      <div class="bg-white border border-neutral-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <i class="fa-solid fa-bell text-lg mr-3 text-neutral-600"></i>
+            <span class="text-sm text-neutral-900">Notifications</span>
+          </div>
+          <label class="relative inline-block w-12 h-6">
+            <input type="checkbox" checked class="sr-only peer">
+            <div class="w-12 h-6 bg-neutral-900 rounded-full peer peer-focus:ring-2 peer-focus:ring-neutral-300"></div>
+            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-6"></div>
+          </label>
+        </div>
+      </div>
+      
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-language text-lg mr-3 text-neutral-600"></i>
+          <div class="text-left">
+            <div class="text-sm text-neutral-900">Language</div>
+            <div class="text-xs text-neutral-500">English</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+      
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-database text-lg mr-3 text-neutral-600"></i>
+          <div class="text-left">
+            <div class="text-sm text-neutral-900">Storage</div>
+            <div class="text-xs text-neutral-500">1.2 GB of 5 GB used</div>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+    </div>
+  </section>
+
+  <section id="app-settings" class="mb-8">
+    <h2 class="text-base text-neutral-900 mb-4">App Settings</h2>
+    
+    <div class="space-y-3">
+      <div class="bg-white border border-neutral-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <i class="fa-solid fa-image text-lg mr-3 text-neutral-600"></i>
+            <span class="text-sm text-neutral-900">Auto-Upload</span>
+          </div>
+          <label class="relative inline-block w-12 h-6">
+            <input type="checkbox" class="sr-only peer">
+            <div class="w-12 h-6 bg-neutral-300 rounded-full peer peer-focus:ring-2 peer-focus:ring-neutral-300"></div>
+            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-6"></div>
+          </label>
+        </div>
+      </div>
+      
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-download text-lg mr-3 text-neutral-600"></i>
+          <span class="text-sm text-neutral-900">Download Quality</span>
+        </div>
+        <div class="flex items-center">
+          <span class="text-xs text-neutral-500 mr-2">High</span>
+          <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+        </div>
+      </button>
+      
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-shield-halved text-lg mr-3 text-neutral-600"></i>
+          <span class="text-sm text-neutral-900">Privacy</span>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+    </div>
+  </section>
+
+  <section id="support-section" class="mb-8">
+    <h2 class="text-base text-neutral-900 mb-4">Support</h2>
+    
+    <div class="space-y-3">
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-circle-question text-lg mr-3 text-neutral-600"></i>
+          <span class="text-sm text-neutral-900">Help Center</span>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+      
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-message text-lg mr-3 text-neutral-600"></i>
+          <span class="text-sm text-neutral-900">Contact Support</span>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+      
+      <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fa-solid fa-file-lines text-lg mr-3 text-neutral-600"></i>
+          <span class="text-sm text-neutral-900">Terms & Privacy</span>
+        </div>
+        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+      </button>
+    </div>
+  </section>
+
+  <section id="app-info" class="mb-8">
+    <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-4 text-center">
+      <p class="text-xs text-neutral-500">Family Archive App</p>
+      <p class="text-xs text-neutral-500 mt-1">Version 1.2.4</p>
+    </div>
+  </section>
+
+  <section id="logout-section" class="mb-4">
+    <button class="w-full bg-white border border-neutral-300 text-neutral-900 rounded-lg py-3 text-sm">
+      Log Out
+    </button>
+  </section>
+
+</main>
+
+<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200">
+  <div class="flex">
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-house text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Home</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-cloud-arrow-up text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Upload</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-list-check text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Triage</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-magnifying-glass text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Search</span>
+    </button>
+  </div>
+</nav>
+
+                        </body>
+                        </html>
+                        

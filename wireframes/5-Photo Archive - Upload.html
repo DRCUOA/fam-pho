@@ -1,0 +1,159 @@
+
+                <html>
+                <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <header id="header" class="bg-white border-b border-neutral-200 px-4 py-3">
+  <div class="flex items-center justify-between">
+    <button class="p-2 text-neutral-600">
+      <i class="fa-solid fa-arrow-left text-lg"></i>
+    </button>
+    <h1 class="text-lg text-neutral-900">Upload Photos</h1>
+    <button class="p-2 text-neutral-600">
+      <i class="fa-solid fa-gear text-lg"></i>
+    </button>
+  </div>
+</header>
+
+<main id="main" class="px-4 py-6 pb-20">
+  
+  <section id="workflow-status" class="mb-8">
+    <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+      <div class="flex items-center mb-3">
+        <div class="w-8 h-8 bg-neutral-600 rounded-full flex items-center justify-center mr-3">
+          <i class="fa-solid fa-cloud-arrow-up text-white text-sm"></i>
+        </div>
+        <div>
+          <h2 class="text-base text-neutral-900">Current Stage</h2>
+          <p class="text-sm text-neutral-600">Uploading Photos</p>
+        </div>
+      </div>
+      <div class="w-full bg-neutral-200 rounded-full h-2">
+        <div class="bg-neutral-600 h-2 rounded-full w-1/4"></div>
+      </div>
+      <p class="text-xs text-neutral-500 mt-2">Step 1 of 4: Upload Photos</p>
+    </div>
+  </section>
+
+  <section id="upload-area" class="mb-8">
+    <div class="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center bg-neutral-50">
+      <div class="mb-4">
+        <i class="fa-solid fa-cloud-arrow-up text-4xl text-neutral-400"></i>
+      </div>
+      <h3 class="text-lg text-neutral-900 mb-2">Add Your Photos</h3>
+      <p class="text-sm text-neutral-600 mb-6">Tap to select photos from your device or camera</p>
+      
+      <button class="w-full bg-neutral-900 text-white rounded-lg py-4 px-6 mb-3">
+        <i class="fa-solid fa-images mr-2"></i>
+        Choose from Gallery
+      </button>
+      
+      <button class="w-full bg-white border border-neutral-300 text-neutral-900 rounded-lg py-4 px-6">
+        <i class="fa-solid fa-camera mr-2"></i>
+        Take Photo
+      </button>
+    </div>
+  </section>
+
+  <section id="upload-tips" class="mb-8">
+    <h3 class="text-base text-neutral-900 mb-4">Upload Tips</h3>
+    
+    <div class="bg-white border border-neutral-200 rounded-lg p-4 space-y-3">
+      <div class="flex items-start">
+        <i class="fa-solid fa-circle-check text-neutral-600 mr-3 mt-1"></i>
+        <p class="text-sm text-neutral-700">Select up to 20 photos at once</p>
+      </div>
+      
+      <div class="flex items-start">
+        <i class="fa-solid fa-circle-check text-neutral-600 mr-3 mt-1"></i>
+        <p class="text-sm text-neutral-700">Photos will be uploaded in original quality</p>
+      </div>
+      
+      <div class="flex items-start">
+        <i class="fa-solid fa-circle-check text-neutral-600 mr-3 mt-1"></i>
+        <p class="text-sm text-neutral-700">You can add details later in the review stage</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="recent-uploads" class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base text-neutral-900">Recent Uploads</h3>
+      <button class="text-sm text-neutral-600">View All</button>
+    </div>
+    
+    <div class="grid grid-cols-3 gap-2">
+      <div class="aspect-square bg-neutral-300 rounded-lg flex items-center justify-center">
+        <span class="text-xs text-white">IMG</span>
+      </div>
+      <div class="aspect-square bg-neutral-300 rounded-lg flex items-center justify-center">
+        <span class="text-xs text-white">IMG</span>
+      </div>
+      <div class="aspect-square bg-neutral-300 rounded-lg flex items-center justify-center">
+        <span class="text-xs text-white">IMG</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="storage-info" class="mb-8">
+    <div class="bg-white border border-neutral-200 rounded-lg p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm text-neutral-900">Storage Used</span>
+        <span class="text-sm text-neutral-600">2.4 GB of 10 GB</span>
+      </div>
+      <div class="w-full bg-neutral-200 rounded-full h-2">
+        <div class="bg-neutral-600 h-2 rounded-full w-1/4"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200">
+  <div class="flex">
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-house text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Home</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center bg-neutral-50">
+      <i class="fa-solid fa-cloud-arrow-up text-lg text-neutral-900 block mb-1"></i>
+      <span class="text-xs text-neutral-900">Upload</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-list-check text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Triage</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-magnifying-glass text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Search</span>
+    </button>
+  </div>
+</nav>
+                        </body>
+                        </html>
+                        

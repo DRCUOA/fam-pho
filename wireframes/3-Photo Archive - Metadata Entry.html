@@ -1,0 +1,136 @@
+
+                <html>
+                <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <header id="header" class="bg-white border-b border-neutral-200 px-4 py-3">
+  <div class="flex items-center justify-between">
+    <button class="p-2 text-neutral-600">
+      <i class="fa-solid fa-arrow-left text-lg"></i>
+    </button>
+    <h1 class="text-lg text-neutral-900">Add Details</h1>
+    <button class="p-2 text-neutral-600">
+      <i class="fa-solid fa-check text-lg"></i>
+    </button>
+  </div>
+</header>
+
+<main id="main" class="px-4 py-6 pb-20">
+  
+  <section id="workflow-status" class="mb-6">
+    <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+      <div class="flex items-center mb-3">
+        <div class="w-8 h-8 bg-neutral-600 rounded-full flex items-center justify-center mr-3">
+          <i class="fa-solid fa-pencil text-white text-sm"></i>
+        </div>
+        <div>
+          <h2 class="text-base text-neutral-900">Current Stage</h2>
+          <p class="text-sm text-neutral-600">Adding Metadata</p>
+        </div>
+      </div>
+      <div class="w-full bg-neutral-200 rounded-full h-2">
+        <div class="bg-neutral-600 h-2 rounded-full w-3/4"></div>
+      </div>
+      <p class="text-xs text-neutral-500 mt-2">Step 3 of 4: Add Photo Details</p>
+    </div>
+  </section>
+
+  <section id="photo-preview" class="mb-6">
+    <div class="bg-neutral-300 rounded-lg h-48 flex items-center justify-center">
+      <span class="text-white text-sm">Photo Preview</span>
+    </div>
+    <p class="text-sm text-neutral-500 mt-2 text-center">IMG_2025_001.jpg</p>
+  </section>
+
+  <section id="metadata-form" class="space-y-6">
+    
+    <div>
+      <label class="block text-sm text-neutral-900 mb-2">When was this taken?</label>
+      <input type="date" class="w-full p-4 border border-neutral-200 rounded-lg text-base" value="2025-01-08">
+    </div>
+
+    <div>
+      <label class="block text-sm text-neutral-900 mb-2">Where was this taken?</label>
+      <input type="text" placeholder="Location or event" class="w-full p-4 border border-neutral-200 rounded-lg text-base">
+    </div>
+
+    <div>
+      <label class="block text-sm text-neutral-900 mb-2">Who is in this photo?</label>
+      <div class="space-y-2">
+        <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between">
+          <div class="flex items-center">
+            <i class="fa-solid fa-user-plus text-neutral-600 mr-3"></i>
+            <span class="text-base text-neutral-900">Add person</span>
+          </div>
+          <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm text-neutral-900 mb-2">Notes (optional)</label>
+      <textarea placeholder="Add any additional details..." class="w-full p-4 border border-neutral-200 rounded-lg text-base h-24 resize-none"></textarea>
+    </div>
+
+  </section>
+
+  <section id="action-buttons" class="mt-8 space-y-3">
+    <button class="w-full bg-neutral-900 text-white rounded-lg p-4 flex items-center justify-center">
+      <span class="text-base">Save & Next Photo</span>
+    </button>
+    
+    <button class="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-center">
+      <span class="text-base text-neutral-900">Skip This Photo</span>
+    </button>
+  </section>
+
+</main>
+
+<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200">
+  <div class="flex">
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-house text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Home</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-cloud-arrow-up text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Upload</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center bg-neutral-50">
+      <i class="fa-solid fa-list-check text-lg text-neutral-900 block mb-1"></i>
+      <span class="text-xs text-neutral-900">Triage</span>
+    </button>
+    
+    <button class="flex-1 py-3 px-2 text-center">
+      <i class="fa-solid fa-magnifying-glass text-lg text-neutral-500 block mb-1"></i>
+      <span class="text-xs text-neutral-500">Search</span>
+    </button>
+  </div>
+</nav>
+                        </body>
+                        </html>
+                        
