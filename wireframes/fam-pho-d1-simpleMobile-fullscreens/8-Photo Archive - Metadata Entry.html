@@ -131,6 +131,44 @@
     </button>
   </div>
 </nav>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Back button
+    const backButton = document.querySelector('#header button:first-child');
+    backButton.addEventListener('click', function() {
+        window.location.href = '1-Photo Archive - Triage Queue.html';
+    });
+
+    // Save & Next Photo button
+    const saveButton = document.querySelector('#action-buttons button:first-child');
+    saveButton.addEventListener('click', function() {
+        // After saving, go back to triage queue for next photo
+        window.location.href = '1-Photo Archive - Triage Queue.html';
+    });
+
+    // Skip This Photo button
+    const skipButton = document.querySelector('#action-buttons button:last-child');
+    skipButton.addEventListener('click', function() {
+        // Skip and go back to triage queue
+        window.location.href = '1-Photo Archive - Triage Queue.html';
+    });
+
+    // Bottom navigation
+    const bottomNavButtons = document.querySelectorAll('#bottom-nav button');
+    bottomNavButtons[0].addEventListener('click', function() {
+        window.location.href = '5-Photo Archive - Home/Workflow.html';
+    });
+    bottomNavButtons[1].addEventListener('click', function() {
+        window.location.href = '3-Photo Archive - Upload.html';
+    });
+    bottomNavButtons[2].addEventListener('click', function() {
+        window.location.href = '1-Photo Archive - Triage Queue.html';
+    });
+    bottomNavButtons[3].addEventListener('click', function() {
+        window.location.href = '2-Photo Archive - Search.html';
+    });
+});
+</script>
                         </body>
                         </html>
                         

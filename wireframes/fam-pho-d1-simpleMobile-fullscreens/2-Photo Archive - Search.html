@@ -139,6 +139,38 @@
     </button>
   </div>
 </nav>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Settings button
+    const settingsButton = document.querySelector('#header button');
+    settingsButton.addEventListener('click', function() {
+        window.location.href = '4-Photo Archive - Settings.html';
+    });
+
+    // Photo results - click to view detail
+    const photoResults = document.querySelectorAll('#search-results .bg-neutral-300');
+    photoResults.forEach((photo, index) => {
+        photo.addEventListener('click', function() {
+            window.location.href = '7-Photo Archive - Photo Detail.html';
+        });
+    });
+
+    // Bottom navigation
+    const bottomNavButtons = document.querySelectorAll('#bottom-nav button');
+    bottomNavButtons[0].addEventListener('click', function() {
+        window.location.href = '5-Photo Archive - Home/Workflow.html';
+    });
+    bottomNavButtons[1].addEventListener('click', function() {
+        window.location.href = '3-Photo Archive - Upload.html';
+    });
+    bottomNavButtons[2].addEventListener('click', function() {
+        window.location.href = '1-Photo Archive - Triage Queue.html';
+    });
+    bottomNavButtons[3].addEventListener('click', function() {
+        window.location.href = '2-Photo Archive - Search.html';
+    });
+});
+</script>
                         </body>
                         </html>
                         

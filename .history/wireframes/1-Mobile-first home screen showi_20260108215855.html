@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>::-webkit-scrollbar { display: none;}</style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+<main id="home-screen" class="min-h-screen flex flex-col">
+    
+    <header id="header" class="pt-6 pb-4 px-6 bg-white border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h1 class="text-xl font-semibold text-gray-900">Family Archive</h1>
+            <button 
+                type="button"
+                id="user-menu"
+                class="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all"
+                aria-label="User menu"
+            >
+                <i class="fa-regular fa-user text-gray-700 text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <section id="next-task-section" class="px-6 pt-8 pb-6">
+        <h2 class="text-sm font-medium text-gray-600 mb-4 uppercase tracking-wide">Next Task</h2>
+        
+        <div id="next-task-card" class="bg-white border-2 border-blue-600 rounded-xl p-6 shadow-sm">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Triage photos</h3>
+                    <p class="text-2xl font-bold text-blue-600">12 photos</p>
+                    <p class="text-base text-gray-600 mt-1">need review</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-check-double text-blue-600 text-lg"></i>
+                </div>
+            </div>
+            
+            <button 
+                type="button"
+                class="w-full h-14 bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 text-white text-base font-medium rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-blue-200 mt-4"
+            >
+                Start Triage
+            </button>
+        </div>
+    </section>
+
+    <section id="main-actions-section" class="px-6 pb-8 flex-1">
+        <h2 class="text-sm font-medium text-gray-600 mb-4 uppercase tracking-wide">Actions</h2>
+        
+        <div id="action-buttons-grid" class="grid grid-cols-2 gap-4">
+            
+            <button 
+                type="button"
+                id="upload-button"
+                class="bg-white border-2 border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center hover:border-blue-600 hover:bg-blue-50 focus:border-blue-600 focus:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all min-h-[140px]"
+            >
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-cloud-arrow-up text-gray-700 text-2xl"></i>
+                </div>
+                <span class="text-base font-medium text-gray-900">Upload</span>
+            </button>
+
+            <button 
+                type="button"
+                id="triage-button"
+                class="bg-white border-2 border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center hover:border-blue-600 hover:bg-blue-50 focus:border-blue-600 focus:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all min-h-[140px]"
+            >
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-check-double text-gray-700 text-2xl"></i>
+                </div>
+                <span class="text-base font-medium text-gray-900">Triage</span>
+            </button>
+
+            <button 
+                type="button"
+                id="search-button"
+                class="bg-white border-2 border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center hover:border-blue-600 hover:bg-blue-50 focus:border-blue-600 focus:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all min-h-[140px]"
+            >
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-magnifying-glass text-gray-700 text-2xl"></i>
+                </div>
+                <span class="text-base font-medium text-gray-900">Search</span>
+            </button>
+
+            <button 
+                type="button"
+                id="settings-button"
+                class="bg-white border-2 border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center hover:border-blue-600 hover:bg-blue-50 focus:border-blue-600 focus:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all min-h-[140px]"
+            >
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-gear text-gray-700 text-2xl"></i>
+                </div>
+                <span class="text-base font-medium text-gray-900">Settings</span>
+            </button>
+
+        </div>
+    </section>
+
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadButton = document.getElementById('upload-button');
+        const triageButton = document.getElementById('triage-button');
+        const searchButton = document.getElementById('search-button');
+        const settingsButton = document.getElementById('settings-button');
+        const startTriageButton = document.querySelector('#next-task-card button');
+        const userMenu = document.getElementById('user-menu');
+
+        uploadButton.addEventListener('click', function() {
+            window.location.href = '2-Mobile-first upload screen.On.html';
+        });
+
+        triageButton.addEventListener('click', function() {
+            window.location.href = '3-Mobile-first triage screen for.html';
+        });
+
+        searchButton.addEventListener('click', function() {
+            window.location.href = '4-Mobile-first search and retrie.html';
+        });
+
+        settingsButton.addEventListener('click', function() {
+            window.location.href = '6-Mobile-first settings screen..html';
+        });
+
+        startTriageButton.addEventListener('click', function() {
+            window.location.href = '3-Mobile-first triage screen for.html';
+        });
+
+        userMenu.addEventListener('click', function() {
+            window.location.href = '6-Mobile-first settings screen..html';
+        });
+    });
+</script>
+
+</body>
+</html>

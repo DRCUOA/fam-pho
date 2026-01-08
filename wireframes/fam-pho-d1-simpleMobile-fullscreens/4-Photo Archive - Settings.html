@@ -229,6 +229,38 @@
   </div>
 </nav>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Back button
+    const backButton = document.querySelector('#header button');
+    backButton.addEventListener('click', function() {
+        window.location.href = '5-Photo Archive - Home/Workflow.html';
+    });
+
+    // Log Out button
+    const logoutButton = document.querySelector('#logout-section button');
+    logoutButton.addEventListener('click', function() {
+        if (confirm('Are you sure you want to log out?')) {
+            window.location.href = '6-Photo Archive - Login.html';
+        }
+    });
+
+    // Bottom navigation
+    const bottomNavButtons = document.querySelectorAll('#bottom-nav button');
+    bottomNavButtons[0].addEventListener('click', function() {
+        window.location.href = '5-Photo Archive - Home/Workflow.html';
+    });
+    bottomNavButtons[1].addEventListener('click', function() {
+        window.location.href = '3-Photo Archive - Upload.html';
+    });
+    bottomNavButtons[2].addEventListener('click', function() {
+        window.location.href = '1-Photo Archive - Triage Queue.html';
+    });
+    bottomNavButtons[3].addEventListener('click', function() {
+        window.location.href = '2-Photo Archive - Search.html';
+    });
+});
+</script>
                         </body>
                         </html>
                         
