@@ -1,5 +1,10 @@
 Always reference the documentation in /documentation/Full_PID/00-project-initiation/ before suggesting new features. Adhere strictly to the 'Definition of Done' and 'Scope' defined in 01_Project-Charter.md.
 
+Always consider and factor into your thinking the changes since the PID documents were created,  all changes are recorded and available as a single json object in documentation/Full_PID/00-project-initiation/CHANGELOG.md
+
 Always consider installed libraries before installing new ones.
 
-NEVER allow a installed library to be used if it has any npm critical vulnerabilites OR warnings about memory leakage
+NEVER allow a installed library to be used if it has any npm critical vulnerabilites OR warnings about memory leakage.
+
+Always do a full update for each atomic change (update the json and markdown table) in documentation/Full_PID/00-project-initiation/CHANGELOG.md
+
