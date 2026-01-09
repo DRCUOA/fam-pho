@@ -5,24 +5,44 @@ const API_BASE = '/api';
 class API {
   static async request(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`;
+    const isFormData = options.body instanceof FormData;
+    
     const config = {
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers: {},
       ...options,
     };
 
-    if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
+    // Only set Content-Type for non-FormData requests
+    // Browser will set Content-Type with boundary for FormData
+    if (!isFormData) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+
+    // Merge any additional headers
+    if (options.headers) {
+      Object.assign(config.headers, options.headers);
+    }
+
+    // Stringify JSON body
+    if (config.body && typeof config.body === 'object' && !isFormData) {
       config.body = JSON.stringify(config.body);
     }
 
     const response = await fetch(url, config);
     
+    // Handle session expiration (401)
+    if (response.status === 401) {
+      // Redirect to login
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+      throw new Error('Session expired. Please login again.');
+    }
+    
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Request failed' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
+      throw new Error(error.error || error.message || `HTTP ${response.status}`);
     }
 
     return response.json();
@@ -45,17 +65,62 @@ class API {
   }
 
   // Upload
-  static async uploadPhotos(libraryId, files) {
+  static async uploadPhotos(libraryId, files, onProgress = null) {
     const formData = new FormData();
     formData.append('library_id', libraryId);
     files.forEach(file => {
       formData.append('photos', file);
     });
 
-    return this.request('/photos/upload', {
-      method: 'POST',
-      headers: {}, // Let browser set Content-Type for FormData
-      body: formData,
+    // Use fetch directly for upload progress tracking
+    const url = `${API_BASE}/photos/upload`;
+    const xhr = new XMLHttpRequest();
+
+    return new Promise((resolve, reject) => {
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          onProgress(percentComplete);
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 401) {
+          if (window.location.pathname !== '/') {
+            window.location.href = '/';
+          }
+          reject(new Error('Session expired. Please login again.'));
+          return;
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch (e) {
+            reject(new Error('Invalid response from server'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.error || error.message || `HTTP ${xhr.status}`));
+          } catch (e) {
+            reject(new Error(`Upload failed: HTTP ${xhr.status}`));
+          }
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
+      });
+
+      xhr.addEventListener('abort', () => {
+        reject(new Error('Upload cancelled'));
+      });
+
+      xhr.open('POST', url);
+      xhr.withCredentials = true; // Include cookies
+      xhr.send(formData);
     });
   }
 
@@ -108,6 +173,10 @@ class API {
     return this.request(`/photos/${photoId}/people/${personId}`, { method: 'POST' });
   }
 
+  static async removePersonFromPhoto(photoId, personId) {
+    return this.request(`/photos/${photoId}/people/${personId}`, { method: 'DELETE' });
+  }
+
   // Tags
   static async getTags(libraryId) {
     return this.request(`/tags?library_id=${libraryId}`);
@@ -118,6 +187,10 @@ class API {
       method: 'POST',
       body: { name: tagName },
     });
+  }
+
+  static async removeTagFromPhoto(photoId, tagId) {
+    return this.request(`/photos/${photoId}/tags/${tagId}`, { method: 'DELETE' });
   }
 
   // Albums

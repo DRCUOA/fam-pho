@@ -1,5 +1,136 @@
 # Changelog
 
+## [2026-01-09] - Feature: Complete Core Workflow Frontend Implementation
+
+### Summary
+Completed full frontend implementation for core workflow (Login → Upload → Triage → Search) with mobile-responsive design, comprehensive error handling, and enhanced user experience features.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.5",
+  "type": "feature",
+  "category": "frontend",
+  "changes": [
+    {
+      "component": "client/js/api.js",
+      "action": "enhance",
+      "changes": [
+        "Fixed FormData upload handling (removed Content-Type header for browser handling)",
+        "Added XMLHttpRequest-based upload with progress tracking",
+        "Added session expiration handling (401 redirect to login)",
+        "Added removePersonFromPhoto and removeTagFromPhoto API methods",
+        "Improved error handling with user-friendly messages"
+      ]
+    },
+    {
+      "component": "client/js/views.js",
+      "action": "complete",
+      "changes": [
+        "Enhanced upload view with mobile camera capture button",
+        "Added file preview list with thumbnails",
+        "Completed triage view with loading/empty states",
+        "Enhanced search view with filters UI and pagination",
+        "Completed metadata view with photo preview and EXIF display",
+        "Enhanced dashboard with workflow status and next tasks",
+        "Added touch-friendly button sizes (min 44px)"
+      ]
+    },
+    {
+      "component": "client/js/app.js",
+      "action": "complete",
+      "changes": [
+        "Implemented file upload with progress tracking and previews",
+        "Added triage photo navigation (previous/next) with keyboard shortcuts",
+        "Added triage grid view toggle",
+        "Implemented debounced search with filters and pagination",
+        "Completed metadata form with all fields (date, location, description)",
+        "Added people and tags management in metadata view",
+        "Enhanced dashboard with workflow status indicators",
+        "Added comprehensive error handling utilities (showError, showSuccess, showLoading)",
+        "Implemented loading states across all views",
+        "Added session expiration handling"
+      ]
+    },
+    {
+      "component": "client/css/styles.css",
+      "action": "enhance",
+      "changes": [
+        "Added upload zone drag-over styles and hover effects",
+        "Added loading spinner animations",
+        "Enhanced photo grid responsive layout",
+        "Added form validation error styles",
+        "Added mobile-responsive utilities",
+        "Added transition animations for view changes",
+        "Added notification styles (slideDown animation)",
+        "Added scrollbar styling",
+        "Added safe area support for mobile notches",
+        "Added focus-visible styles for accessibility"
+      ]
+    }
+  ],
+  "benefits": [
+    "Complete end-to-end workflow functionality",
+    "Mobile-responsive design with touch-friendly interactions",
+    "Comprehensive error handling and user feedback",
+    "Enhanced user experience with loading states and animations",
+    "Keyboard shortcuts for efficient triage workflow",
+    "Progress tracking for file uploads",
+    "Debounced search for better performance",
+    "Accessible design with proper focus management"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **client/js/api.js** | Enhance | Fixed FormData upload, added progress tracking, session expiration handling |
+| **client/js/views.js** | Complete | Enhanced all views with mobile support, loading states, and improved UX |
+| **client/js/app.js** | Complete | Implemented all handlers, navigation, error handling, and workflow features |
+| **client/css/styles.css** | Enhance | Added animations, responsive styles, mobile optimizations, accessibility |
+
+### Benefits
+
+- ✅ Complete core workflow implementation (Login → Upload → Triage → Search)
+- ✅ Mobile-responsive design with touch-friendly interactions (44px minimum touch targets)
+- ✅ Comprehensive error handling with toast notifications
+- ✅ Loading states provide clear user feedback
+- ✅ Keyboard shortcuts for efficient triage (← → K D U)
+- ✅ Upload progress tracking with visual indicators
+- ✅ Debounced search for better performance
+- ✅ Photo navigation in triage view
+- ✅ Grid/list view toggle for triage
+- ✅ Search filters (date range) with pagination
+- ✅ Metadata form with EXIF display and people/tags management
+- ✅ Dashboard workflow status and next tasks display
+- ✅ Accessible design with proper focus management
+
+### Files Modified
+
+- `client/js/api.js`
+- `client/js/views.js`
+- `client/js/app.js`
+- `client/css/styles.css`
+
+### Testing Recommendations
+
+- Test complete workflow: Login → Upload → Triage → Search
+- Test mobile responsiveness on actual devices
+- Test keyboard shortcuts in triage view
+- Test upload with progress tracking
+- Test error handling (network errors, session expiration)
+- Test search with filters and pagination
+- Test metadata entry with people/tags
+- Verify touch-friendly button sizes on mobile
+
+---
+
 ## [2026-01-09] - Documentation: Add Route Testing Manual
 
 ### Summary

@@ -1,5 +1,6 @@
 /* Custom styles for Family Photo Archive */
 
+/* Photo Grid */
 .photo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -9,19 +10,40 @@
 @media (max-width: 640px) {
     .photo-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.75rem;
     }
 }
 
+/* Upload Zone */
 .upload-zone {
     border: 2px dashed #d4d4d4;
     transition: all 0.3s ease;
+    background-color: #fafafa;
+}
+
+.upload-zone:hover {
+    border-color: #a3a3a3;
+    background-color: #f5f5f5;
 }
 
 .upload-zone.dragover {
     border-color: #525252;
-    background-color: #f5f5f5;
+    background-color: #e5e5e5;
+    transform: scale(1.02);
 }
 
+/* Loading Spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Fade In Animation */
 .fade-in {
     animation: fadeIn 0.3s ease-in;
 }
@@ -34,5 +56,185 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Slide In Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Button Hover Effects */
+button:not(:disabled):hover {
+    transition: all 0.2s ease;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Form Input Focus */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #525252;
+    border-color: #525252;
+}
+
+/* Mobile Touch Targets */
+@media (max-width: 640px) {
+    button,
+    a,
+    input[type="button"],
+    input[type="submit"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* Image Loading Placeholder */
+img {
+    background-color: #f5f5f5;
+    background-image: linear-gradient(45deg, #e5e5e5 25%, transparent 25%),
+                      linear-gradient(-45deg, #e5e5e5 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, #e5e5e5 75%),
+                      linear-gradient(-45deg, transparent 75%, #e5e5e5 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+img[src=""],
+img:not([src]) {
+    opacity: 0;
+}
+
+/* Notification Styles */
+#app-loading,
+#app-error,
+#app-success {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Card Hover Effect */
+.bg-white:hover {
+    transition: box-shadow 0.2s ease;
+}
+
+.bg-white:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Progress Bar */
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+/* Tag Badge Styles */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.tag-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive Text */
+@media (max-width: 640px) {
+    h1 {
+        font-size: 1.25rem;
+    }
+    
+    h2 {
+        font-size: 1.125rem;
+    }
+    
+    .text-base {
+        font-size: 0.9375rem;
+    }
+}
+
+/* Safe Area for Mobile Notches */
+@supports (padding: max(0px)) {
+    .pb-20 {
+        padding-bottom: max(5rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* Focus Visible for Accessibility */
+*:focus-visible {
+    outline: 2px solid #525252;
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    header,
+    button,
+    .no-print {
+        display: none !important;
     }
 }
