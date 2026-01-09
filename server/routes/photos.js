@@ -1,8 +1,14 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const path = require('path');
+const fs = require('fs').promises;
 const Photo = require('../models/Photo');
 const PhotoFile = require('../models/PhotoFile');
+const ImageService = require('../services/imageService');
+const FileService = require('../services/fileService');
+const HashService = require('../services/hashService');
 const ActivityLog = require('../services/activityLog');
+const config = require('../utils/config');
 const { requireAuth } = require('../middleware/auth');
 const { requirePhotoAccess, requireLibraryMember, requireRole } = require('../middleware/authorization');
 const logger = require('../utils/logger');
@@ -169,6 +175,98 @@ router.post('/photos/:id/undo-discard', requireAuth, requirePhotoAccess, require
   } catch (error) {
     logger.error('Undo discard error:', error);
     res.status(500).json({ error: 'Failed to undo discard' });
+  }
+});
+
+// Create derivative (rotate)
+router.post('/photos/:id/rotate', requireAuth, requirePhotoAccess, requireRole('contributor'), [
+  body('degrees').isIn([90, 180, 270]),
+  body('file_id').optional().isInt(),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { degrees, file_id } = req.body;
+    const photo = req.photo;
+
+    // Get source file (master or specified file)
+    let sourceFile;
+    if (file_id) {
+      sourceFile = await PhotoFile.findById(file_id);
+      if (!sourceFile || sourceFile.photo_id !== photo.id) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+    } else {
+      // Use master file
+      const files = await PhotoFile.findByPhotoId(photo.id);
+      sourceFile = files.find(f => f.kind === 'master') || files.find(f => f.kind === 'original') || files[0];
+      if (!sourceFile) {
+        return res.status(404).json({ error: 'No source file found' });
+      }
+    }
+
+    // Get source file path
+    const sourcePath = path.join(config.storage.basePath, sourceFile.storage_key);
+    
+    // Generate derivative path
+    const timestamp = Date.now();
+    const ext = path.extname(sourceFile.filename) || '.jpg';
+    const derivativeFilename = `rotated_${degrees}_${timestamp}${ext}`;
+    const { fullPath, relativePath } = FileService.generateStoragePath(
+      photo.library_id,
+      derivativeFilename,
+      'derivative'
+    );
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+
+    // Rotate image
+    const rotated = await ImageService.rotateImage(sourcePath, fullPath, degrees);
+    if (!rotated) {
+      return res.status(500).json({ error: 'Failed to rotate image' });
+    }
+
+    // Get metadata for rotated image
+    const imageMetadata = await ImageService.getImageMetadata(fullPath);
+    const fileStats = await fs.stat(fullPath);
+    const sha256 = await HashService.computeFileHash(fullPath);
+
+    // Create derivative file record
+    const derivativeFile = await PhotoFile.create({
+      photo_id: photo.id,
+      kind: 'derivative',
+      storage_key: relativePath,
+      filename: derivativeFilename,
+      mime_type: sourceFile.mime_type,
+      bytes: fileStats.size,
+      width: imageMetadata?.width || null,
+      height: imageMetadata?.height || null,
+      orientation: 1, // Rotated images are normalized
+      sha256: sha256,
+      parent_file_id: sourceFile.id,
+      derivative_type: `rotate_${degrees}`,
+    });
+
+    // Log activity
+    await ActivityLog.log('photo.derivative_created', {
+      libraryId: req.libraryId,
+      actorUserId: req.user.id,
+      entityType: 'photo',
+      entityId: photo.id,
+      details: { derivative_type: `rotate_${degrees}`, file_id: derivativeFile.id },
+    });
+
+    res.json({ 
+      file: derivativeFile,
+      message: `Photo rotated ${degrees} degrees`,
+    });
+  } catch (error) {
+    logger.error('Rotate photo error:', error);
+    res.status(500).json({ error: 'Failed to rotate photo' });
   }
 });
 

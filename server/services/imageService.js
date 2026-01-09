@@ -54,6 +54,28 @@ class ImageService {
       return null;
     }
   }
+
+  // Rotate image
+  static async rotateImage(sourcePath, targetPath, degrees) {
+    try {
+      // Sharp expects rotation in degrees (90, 180, 270)
+      // Normalize to valid values
+      const normalizedDegrees = degrees % 360;
+      if (normalizedDegrees === 0) {
+        // No rotation needed, just copy
+        await sharp(sourcePath).toFile(targetPath);
+      } else {
+        await sharp(sourcePath)
+          .rotate(normalizedDegrees)
+          .jpeg({ quality: 90 })
+          .toFile(targetPath);
+      }
+      return true;
+    } catch (error) {
+      logger.error('Image rotation failed:', error);
+      return false;
+    }
+  }
 }
 
 module.exports = ImageService;

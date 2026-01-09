@@ -31,9 +31,10 @@ class PhotoFile {
     const result = await pool.query(
       `INSERT INTO photo_files (
         photo_id, kind, storage_key, filename, mime_type, bytes,
-        width, height, orientation, sha256, metadata_json
+        width, height, orientation, sha256, metadata_json,
+        parent_file_id, derivative_type
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *`,
       [
         data.photo_id,
@@ -47,6 +48,8 @@ class PhotoFile {
         orientation,
         data.sha256,
         data.metadata_json ? JSON.stringify(data.metadata_json) : null,
+        data.parent_file_id || null,
+        data.derivative_type || null,
       ]
     );
     return result.rows[0];

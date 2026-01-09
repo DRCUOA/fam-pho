@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS photos (
 CREATE TABLE IF NOT EXISTS photo_files (
     id SERIAL PRIMARY KEY,
     photo_id INTEGER NOT NULL,
-    kind VARCHAR(50) NOT NULL CHECK(kind IN ('original', 'preview', 'thumbnail')),
+    kind VARCHAR(50) NOT NULL CHECK(kind IN ('original', 'preview', 'thumbnail', 'derivative')),
     storage_key TEXT NOT NULL,
     filename VARCHAR(255) NOT NULL,
     mime_type VARCHAR(100) NOT NULL,
@@ -72,9 +72,11 @@ CREATE TABLE IF NOT EXISTS photo_files (
     orientation INTEGER DEFAULT 1,
     sha256 VARCHAR(64) NOT NULL,
     metadata_json JSONB,
+    parent_file_id INTEGER,
+    derivative_type VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE,
-    UNIQUE(photo_id, kind)
+    FOREIGN KEY (parent_file_id) REFERENCES photo_files(id) ON DELETE CASCADE
 );
 
 -- People / Albums / Tags

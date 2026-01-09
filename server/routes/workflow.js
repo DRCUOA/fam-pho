@@ -33,6 +33,9 @@ router.get('/workflow/next-tasks', requireAuth, requireLibraryMember, async (req
       }),
     ]);
 
+    // Get rejected photos count
+    const rejectedCount = await Photo.countByState(libraryId, 'rejected');
+
     res.json({
       queues: {
         triage: {
@@ -46,11 +49,40 @@ router.get('/workflow/next-tasks', requireAuth, requireLibraryMember, async (req
         flagged: {
           count: flaggedCount,
         },
+        rejected: {
+          count: rejectedCount,
+        },
       },
     });
   } catch (error) {
     logger.error('Next tasks error:', error);
     res.status(500).json({ error: 'Failed to fetch next tasks' });
+  }
+});
+
+// Get rejected photos queue
+router.get('/workflow/rejected', requireAuth, requireLibraryMember, async (req, res) => {
+  try {
+    const libraryId = req.libraryId;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const rejectedPhotos = await Photo.findByLibrary(libraryId, {
+      state: 'rejected',
+      excludeDeleted: true,
+      limit,
+      offset,
+    });
+
+    const count = await Photo.countByState(libraryId, 'rejected');
+
+    res.json({
+      photos: rejectedPhotos,
+      count,
+    });
+  } catch (error) {
+    logger.error('Rejected queue error:', error);
+    res.status(500).json({ error: 'Failed to fetch rejected photos' });
   }
 });
 

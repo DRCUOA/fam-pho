@@ -1,7 +1,7 @@
 // Main application entry point
 
 import API from './api.js';
-import { renderLogin, renderDashboard, renderUpload, renderTriage, renderMetadata, renderSearch } from './views.js';
+import { renderLogin, renderDashboard, renderUpload, renderTriage, renderMetadata, renderSearch, renderRejected } from './views.js';
 
 let currentUser = null;
 let currentLibrary = null;
@@ -134,6 +134,13 @@ function showSearch() {
   setupSearchHandlers();
 }
 
+function showRejected() {
+  currentView = 'rejected';
+  document.getElementById('app').innerHTML = renderRejected(currentLibrary);
+  setupRejectedHandlers();
+  loadRejectedPhotos();
+}
+
 // Login handlers
 function setupLoginHandlers() {
   const form = document.getElementById('login-form');
@@ -188,6 +195,9 @@ function setupDashboardHandlers() {
   });
   if (searchBtn) searchBtn.addEventListener('click', () => showSearch());
   
+  const rejectedBtn = document.getElementById('btn-rejected');
+  if (rejectedBtn) rejectedBtn.addEventListener('click', () => showRejected());
+  
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       try {
@@ -218,9 +228,11 @@ async function loadNextTasks() {
 function updateTaskCounts(queues) {
   const triageCount = document.getElementById('triage-count');
   const metadataCount = document.getElementById('metadata-count');
+  const rejectedCount = document.getElementById('rejected-count');
   
   if (triageCount) triageCount.textContent = queues.triage?.count || 0;
   if (metadataCount) metadataCount.textContent = queues.metadata_entry?.count || 0;
+  if (rejectedCount) rejectedCount.textContent = queues.rejected?.count || 0;
 }
 
 function updateWorkflowStatus(queues) {
@@ -918,6 +930,7 @@ function renderMetadataForm(photo) {
                    photo.files?.[0];
     if (master) {
       previewImg.src = API.getFileUrl(master.id);
+      previewImg.dataset.fileId = master.id;
     }
   }
 
@@ -1441,6 +1454,28 @@ window.createAlbum = async function() {
   }
 };
 
+window.rotatePhoto = async function(degrees) {
+  if (!currentMetadataPhoto) {
+    showError('Photo not loaded');
+    return;
+  }
+
+  const previewImg = document.getElementById('metadata-photo-preview');
+  const fileId = previewImg?.dataset?.fileId ? parseInt(previewImg.dataset.fileId) : null;
+
+  try {
+    showLoading(`Rotating photo ${degrees}°...`);
+    await API.rotatePhoto(currentMetadataPhoto.id, degrees, fileId);
+    // Reload photo metadata to show new derivative
+    await loadPhotoMetadata(currentMetadataPhoto.id);
+    hideLoading();
+    showSuccess(`Photo rotated ${degrees}° successfully`);
+  } catch (error) {
+    hideLoading();
+    showError('Failed to rotate photo: ' + error.message);
+  }
+};
+
 window.saveMetadata = async function(photoId) {
   try {
     showLoading('Saving...');
@@ -1709,6 +1744,106 @@ window.goToSearchPage = function(page) {
 
 window.showPhotoDetail = function(photoId) {
   showMetadata(photoId);
+};
+
+// Rejected photos handlers
+let rejectedPhotos = [];
+
+function setupRejectedHandlers() {
+  const backBtn = document.getElementById('btn-back');
+  if (backBtn) backBtn.addEventListener('click', () => showDashboard());
+}
+
+async function loadRejectedPhotos() {
+  const loadingDiv = document.getElementById('rejected-loading');
+  const container = document.getElementById('rejected-photos');
+  const emptyDiv = document.getElementById('rejected-empty');
+
+  if (loadingDiv) loadingDiv.classList.remove('hidden');
+  if (container) container.classList.add('hidden');
+  if (emptyDiv) emptyDiv.classList.add('hidden');
+
+  try {
+    const data = await API.getRejectedQueue(currentLibrary.id);
+    rejectedPhotos = data.photos || [];
+    
+    if (loadingDiv) loadingDiv.classList.add('hidden');
+    
+    if (rejectedPhotos.length === 0) {
+      if (emptyDiv) emptyDiv.classList.remove('hidden');
+    } else {
+      renderRejectedPhotos();
+    }
+  } catch (error) {
+    console.error('Failed to load rejected photos:', error);
+    if (loadingDiv) loadingDiv.classList.add('hidden');
+    showError('Failed to load rejected photos: ' + error.message);
+  }
+}
+
+function renderRejectedPhotos() {
+  const container = document.getElementById('rejected-photos');
+  if (!container) return;
+
+  container.classList.remove('hidden');
+  
+  container.innerHTML = `
+    <div class="mb-4">
+      <p class="text-sm text-neutral-600">
+        ${rejectedPhotos.length} rejected photo${rejectedPhotos.length !== 1 ? 's' : ''}
+      </p>
+    </div>
+    <div class="photo-grid">
+      ${rejectedPhotos.map(photo => {
+        const thumbnail = photo.files?.find(f => f.kind === 'thumbnail') || 
+                          photo.files?.find(f => f.kind === 'master');
+        const uploadDate = photo.upload_at ? new Date(photo.upload_at).toLocaleDateString() : 'Unknown';
+        
+        return `
+          <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+            <div class="aspect-square bg-neutral-100 relative">
+              ${thumbnail ? `
+                <img src="${API.getFileUrl(thumbnail.id)}" 
+                     alt="Photo" 
+                     class="w-full h-full object-cover"
+                     loading="lazy">
+              ` : `
+                <div class="w-full h-full flex items-center justify-center text-neutral-400">
+                  <i class="fa-solid fa-image text-4xl"></i>
+                </div>
+              `}
+            </div>
+            <div class="p-3">
+              <p class="text-xs text-neutral-600 mb-1">Uploaded: ${uploadDate}</p>
+              <button onclick="undoDiscard(${photo.id})" 
+                      class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium text-sm min-h-[36px] flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-left"></i>
+                Undo Discard
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+window.undoDiscard = async function(photoId) {
+  try {
+    showLoading('Restoring photo...');
+    await API.undoDiscard(photoId);
+    // Reload rejected photos
+    await loadRejectedPhotos();
+    // Refresh dashboard counts
+    if (currentView === 'dashboard') {
+      await renderNextTasks();
+    }
+    hideLoading();
+    showSuccess('Photo restored to review queue');
+  } catch (error) {
+    hideLoading();
+    showError('Failed to restore photo: ' + error.message);
+  }
 };
 
 // Export navigation functions

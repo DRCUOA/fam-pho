@@ -1,5 +1,190 @@
 # Changelog
 
+## [2026-01-09] - Feature: EPIC 3 & EPIC 4 - Undo Discard UI and Derivative Generation
+
+### Summary
+Completed remaining EPIC 3 and EPIC 4 functionality: added undo discard UI for rejected photos, and implemented derivative generation system with rotation support. Users can now restore accidentally discarded photos and create rotated derivatives of photos while preserving master files.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.11",
+  "type": "feature",
+  "category": "epic_3_4_workflow",
+  "changes": [
+    {
+      "component": "server/routes/workflow.js",
+      "action": "modify",
+      "changes": [
+        "Added rejected photos count to next-tasks endpoint",
+        "Added /workflow/rejected endpoint to fetch rejected photos queue"
+      ],
+      "sections": [
+        "Workflow queue management"
+      ]
+    },
+    {
+      "component": "server/routes/photos.js",
+      "action": "modify",
+      "changes": [
+        "Added /photos/:id/rotate endpoint for creating rotated derivatives",
+        "Added validation for rotation degrees (90, 180, 270)",
+        "Added derivative file creation with parent_file_id tracking",
+        "Added activity logging for derivative creation"
+      ],
+      "sections": [
+        "Derivative generation",
+        "Photo rotation"
+      ]
+    },
+    {
+      "component": "server/services/imageService.js",
+      "action": "modify",
+      "changes": [
+        "Added rotateImage() method for rotating images using Sharp",
+        "Supports 90, 180, 270 degree rotations"
+      ],
+      "sections": [
+        "Image processing"
+      ]
+    },
+    {
+      "component": "server/models/PhotoFile.js",
+      "action": "modify",
+      "changes": [
+        "Updated create() method to support parent_file_id and derivative_type fields",
+        "Enables tracking derivative relationships"
+      ],
+      "sections": [
+        "Database model"
+      ]
+    },
+    {
+      "component": "database/schema.sql",
+      "action": "modify",
+      "changes": [
+        "Added 'derivative' to photo_files.kind CHECK constraint",
+        "Added parent_file_id column with foreign key to photo_files",
+        "Added derivative_type column for tracking derivative operations",
+        "Removed UNIQUE constraint to allow multiple derivatives"
+      ],
+      "sections": [
+        "Database schema"
+      ]
+    },
+    {
+      "component": "client/js/app.js",
+      "action": "modify",
+      "changes": [
+        "Added showRejected() function to display rejected photos view",
+        "Added setupRejectedHandlers() for rejected photos UI",
+        "Added loadRejectedPhotos() to fetch rejected queue",
+        "Added renderRejectedPhotos() to display rejected photos grid",
+        "Added undoDiscard() function to restore rejected photos",
+        "Added rotatePhoto() function to create rotated derivatives",
+        "Updated updateTaskCounts() to include rejected count",
+        "Added rejected button handler in dashboard"
+      ],
+      "sections": [
+        "Rejected photos management",
+        "Derivative creation UI"
+      ]
+    },
+    {
+      "component": "client/js/views.js",
+      "action": "modify",
+      "changes": [
+        "Added renderRejected() function for rejected photos view",
+        "Added 'Rejected Photos' button to dashboard",
+        "Added rotation controls to metadata form (90° CW, 180°, 90° CCW)"
+      ],
+      "sections": [
+        "UI views"
+      ]
+    },
+    {
+      "component": "client/js/api.js",
+      "action": "modify",
+      "changes": [
+        "Added getRejectedQueue() method",
+        "Added undoDiscard() method",
+        "Added rotatePhoto() method"
+      ],
+      "sections": [
+        "API client"
+      ]
+    }
+  ],
+  "benefits": [
+    "Users can restore accidentally discarded photos",
+    "Users can create rotated derivatives without modifying master files",
+    "Derivative relationships are tracked in database",
+    "Master files remain immutable",
+    "EPIC 3 now 100% complete",
+    "EPIC 4 now 85% complete (basic derivatives working)"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **server/routes/workflow.js** | Modify | Added rejected queue endpoint |
+| **server/routes/photos.js** | Modify | Added rotation endpoint with derivative creation |
+| **server/services/imageService.js** | Modify | Added rotateImage() method |
+| **server/models/PhotoFile.js** | Modify | Added parent_file_id and derivative_type support |
+| **database/schema.sql** | Modify | Added derivative kind and relationship tracking |
+| **client/js/app.js** | Modify | Added rejected photos view and rotation UI |
+| **client/js/views.js** | Modify | Added rejected view and rotation controls |
+| **client/js/api.js** | Modify | Added rejected queue and rotation API methods |
+
+### Benefits
+
+- ✅ Users can restore accidentally discarded photos (EPIC 3 complete)
+- ✅ Users can create rotated derivatives without modifying master files
+- ✅ Derivative relationships are tracked in database
+- ✅ Master files remain immutable (non-destructive editing)
+- ✅ EPIC 3: 95% → 100% complete
+- ✅ EPIC 4: 60% → 85% complete
+
+### Files Modified
+
+- `server/routes/workflow.js` - Added rejected queue endpoint
+- `server/routes/photos.js` - Added rotation endpoint
+- `server/services/imageService.js` - Added rotation method
+- `server/models/PhotoFile.js` - Added derivative tracking
+- `database/schema.sql` - Added derivative support to schema
+- `client/js/app.js` - Added rejected photos UI and rotation handlers
+- `client/js/views.js` - Added rejected view and rotation controls
+- `client/js/api.js` - Added API methods
+
+### Key Features Added
+
+1. **Undo Discard (EPIC 3):**
+   - Rejected photos queue view
+   - Undo discard button restores photo to triage queue
+   - Dashboard shows rejected count
+   - Only organizers can undo discards (per requirements)
+
+2. **Derivative Generation (EPIC 4):**
+   - Rotation controls in metadata form (90° CW, 180°, 90° CCW)
+   - Creates new derivative files without modifying masters
+   - Tracks parent-child relationships
+   - Stores derivative type metadata
+   - Master files remain immutable
+
+### EPIC Status Updates
+
+- **EPIC 3 (Triage):** 95% → 100% ✅ Complete
+- **EPIC 4 (File Management):** 60% → 85% ⚠️ Partial (crop/color-correct pending)
+
+---
+
 ## [2026-01-09] - Feature: EPIC 5 Metadata & Catalog - People and Albums Management UI
 
 ### Summary

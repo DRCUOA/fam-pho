@@ -111,6 +111,17 @@ export function renderDashboard(user, library) {
             </div>
             <i class="fa-solid fa-chevron-right text-neutral-500"></i>
           </button>
+          <button id="btn-rejected" 
+                  class="w-full bg-white hover:bg-neutral-50 border border-neutral-200 rounded-lg p-4 flex items-center justify-between min-h-[60px] transition-colors">
+            <div class="flex items-center flex-1">
+              <i class="fa-solid fa-trash-can text-xl mr-3 text-neutral-600"></i>
+              <div class="text-left flex-1">
+                <div class="text-base text-neutral-900 font-medium">Rejected Photos</div>
+                <div class="text-sm text-neutral-600"><span id="rejected-count">0</span> photos rejected</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-neutral-500"></i>
+          </button>
         </div>
       </section>
     </main>
@@ -226,8 +237,54 @@ export function renderMetadata(photoId, library) {
             <h3 class="text-sm font-medium text-neutral-900 mb-3">EXIF Data</h3>
             <div id="exif-content" class="text-xs text-neutral-600 space-y-1"></div>
           </div>
+          <div id="metadata-actions" class="bg-white rounded-lg p-4 border border-neutral-200">
+            <h3 class="text-sm font-medium text-neutral-900 mb-3">Image Actions</h3>
+            <div class="space-y-2">
+              <p class="text-xs text-neutral-600 mb-2">Rotate photo (creates derivative):</p>
+              <div class="flex gap-2">
+                <button onclick="rotatePhoto(90)" 
+                        class="flex-1 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-sm font-medium min-h-[36px]">
+                  <i class="fa-solid fa-rotate-right mr-2"></i>90° CW
+                </button>
+                <button onclick="rotatePhoto(180)" 
+                        class="flex-1 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-sm font-medium min-h-[36px]">
+                  <i class="fa-solid fa-rotate mr-2"></i>180°
+                </button>
+                <button onclick="rotatePhoto(270)" 
+                        class="flex-1 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-sm font-medium min-h-[36px]">
+                  <i class="fa-solid fa-rotate-left mr-2"></i>90° CCW
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         <form id="metadata-form" class="bg-white rounded-lg p-4 border border-neutral-200 space-y-4"></form>
+      </div>
+    </main>
+  `;
+}
+
+export function renderRejected(library) {
+  return `
+    <header class="bg-white border-b border-neutral-200 px-4 py-3">
+      <div class="flex items-center justify-between">
+        <button id="btn-back" class="p-2 text-neutral-600 min-w-[44px] min-h-[44px] flex items-center justify-center">
+          <i class="fa-solid fa-arrow-left text-lg"></i>
+        </button>
+        <h1 class="text-lg text-neutral-900">Rejected Photos</h1>
+        <div class="w-11"></div>
+      </div>
+    </header>
+    <main class="px-4 py-6 pb-20">
+      <div id="rejected-loading" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
+        <p class="text-neutral-600 mt-4">Loading rejected photos...</p>
+      </div>
+      <div id="rejected-photos" class="hidden"></div>
+      <div id="rejected-empty" class="hidden text-center py-12">
+        <i class="fa-solid fa-check-circle text-5xl text-green-500 mb-4"></i>
+        <p class="text-lg text-neutral-900 mb-2">No rejected photos</p>
+        <p class="text-neutral-600">All photos have been processed.</p>
       </div>
     </main>
   `;

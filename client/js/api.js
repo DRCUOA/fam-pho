@@ -173,6 +173,23 @@ class API {
     return this.request(`/photos/${id}/complete`, { method: 'POST' });
   }
 
+  static async getRejectedQueue(libraryId, limit = 50, offset = 0) {
+    return this.request(`/workflow/rejected?library_id=${libraryId}&limit=${limit}&offset=${offset}`);
+  }
+
+  static async undoDiscard(photoId) {
+    return this.request(`/photos/${photoId}/undo-discard`, { method: 'POST' });
+  }
+
+  static async rotatePhoto(photoId, degrees, fileId = null) {
+    const body = { degrees };
+    if (fileId) body.file_id = fileId;
+    return this.request(`/photos/${photoId}/rotate`, {
+      method: 'POST',
+      body,
+    });
+  }
+
   // Search
   static async searchPhotos(libraryId, params = {}) {
     const query = new URLSearchParams({ library_id: libraryId, ...params });
