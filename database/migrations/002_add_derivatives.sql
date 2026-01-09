@@ -11,20 +11,12 @@ ALTER TABLE photo_files
 ADD COLUMN IF NOT EXISTS derivative_type VARCHAR(50);
 
 -- Update CHECK constraint to include 'derivative' kind
--- Note: PostgreSQL doesn't support ALTER CHECK constraint directly, so we need to:
--- 1. Drop the existing constraint
--- 2. Add a new constraint with 'derivative' included
+-- Drop the existing constraint if it exists
+ALTER TABLE photo_files DROP CONSTRAINT IF EXISTS photo_files_kind_check;
 
--- First, find and drop the existing constraint
-DO $$ 
-BEGIN
-    -- Drop the existing constraint if it exists
-    ALTER TABLE photo_files DROP CONSTRAINT IF EXISTS photo_files_kind_check;
-    
-    -- Add new constraint with 'derivative' included
-    ALTER TABLE photo_files ADD CONSTRAINT photo_files_kind_check 
-    CHECK (kind IN ('original', 'preview', 'thumbnail', 'derivative'));
-END $$;
+-- Add new constraint with 'derivative' included
+ALTER TABLE photo_files ADD CONSTRAINT photo_files_kind_check 
+CHECK (kind IN ('original', 'preview', 'thumbnail', 'derivative'));
 
 -- Remove the old UNIQUE constraint that included kind (if it exists)
 -- We'll allow multiple derivatives per photo
