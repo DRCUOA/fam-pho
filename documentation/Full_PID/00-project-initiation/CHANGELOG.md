@@ -1,5 +1,85 @@
 # Changelog
 
+## [2026-01-09] - Feature: Add Root-Level Health Check Endpoint
+
+### Summary
+Added a comprehensive health check endpoint at `/health` for monitoring server status and database connectivity. This endpoint is accessible without authentication and provides detailed system information.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.3",
+  "type": "feature",
+  "category": "monitoring",
+  "changes": [
+    {
+      "component": "server/index.js",
+      "action": "add",
+      "changes": [
+        "Added GET /health endpoint at root level (before auth middleware)",
+        "Endpoint checks database connectivity",
+        "Returns server status, uptime, environment, and database info",
+        "Returns HTTP 503 on database connection failure",
+        "Kept existing /api/health endpoint for backward compatibility"
+      ],
+      "response_format": {
+        "healthy": {
+          "status": "ok",
+          "timestamp": "ISO 8601 timestamp",
+          "uptime": "seconds",
+          "environment": "development|production",
+          "database": {
+            "status": "connected",
+            "time": "database server timestamp",
+            "version": "PostgreSQL version"
+          }
+        },
+        "unhealthy": {
+          "status": "error",
+          "timestamp": "ISO 8601 timestamp",
+          "uptime": "seconds",
+          "environment": "development|production",
+          "database": {
+            "status": "disconnected",
+            "error": "error message"
+          }
+        }
+      }
+    }
+  ],
+  "benefits": [
+    "Enables monitoring and deployment health checks",
+    "No authentication required (standard practice)",
+    "Provides detailed system diagnostics",
+    "Supports automated monitoring tools"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **server/index.js** | Add endpoint | GET /health route at root level with database connectivity check |
+
+### Benefits
+
+- ✅ Enables monitoring and deployment health checks
+- ✅ No authentication required (standard practice for health endpoints)
+- ✅ Provides detailed system diagnostics (uptime, environment, database status)
+- ✅ Supports automated monitoring tools and load balancers
+- ✅ Backward compatible (existing /api/health endpoint retained)
+
+### Files Modified
+
+- `server/index.js`
+
+---
+
 ## [2026-01-08] - Database Migration: SQLite to PostgreSQL
 
 ### Summary

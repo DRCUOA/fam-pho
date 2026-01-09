@@ -63,6 +63,43 @@ app.use(session({
   name: 'fam-pho.sid',
 }));
 
+// Health check endpoint (at root level, before auth middleware)
+app.get('/health', async (req, res) => {
+  const pool = require('./models/db');
+  const startTime = process.uptime();
+  
+  try {
+    // Check database connectivity
+    const dbResult = await pool.query('SELECT NOW() as db_time, version() as db_version');
+    const dbTime = dbResult.rows[0].db_time;
+    const dbVersion = dbResult.rows[0].db_version.split(' ')[0] + ' ' + dbResult.rows[0].db_version.split(' ')[1];
+    
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(startTime),
+      environment: config.env,
+      database: {
+        status: 'connected',
+        time: dbTime,
+        version: dbVersion,
+      },
+    });
+  } catch (error) {
+    logger.error('Health check failed:', error);
+    res.status(503).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(startTime),
+      environment: config.env,
+      database: {
+        status: 'disconnected',
+        error: error.message,
+      },
+    });
+  }
+});
+
 // Attach user to request
 app.use(attachUser);
 
@@ -77,7 +114,7 @@ app.use('/api', albumsRoutes);
 app.use('/api', searchRoutes);
 app.use('/api', workflowRoutes);
 
-// Health check endpoint
+// Legacy health check endpoint (kept for backward compatibility)
 app.get('/api/health', async (req, res) => {
   const pool = require('./models/db');
   try {
