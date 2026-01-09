@@ -136,8 +136,13 @@ function showMetadata(photoId) {
 
 function showSearch() {
   currentView = 'search';
+  // Reset search state
+  currentSearchPage = 1;
+  searchFilters = {};
   document.getElementById('app').innerHTML = renderSearch(currentLibrary);
   setupSearchHandlers();
+  // Load all photos by default
+  performSearch();
 }
 
 function showRejected() {

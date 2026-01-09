@@ -1,5 +1,281 @@
 # Changelog
 
+## [2026-01-09] - Feature: Comprehensive Automated Test Suite for Metadata Review and Update Flow
+
+### Summary
+Added comprehensive automated test suite using Jest and Supertest to test the entire metadata review and update workflow. Includes unit tests for Photo model state transitions, API integration tests for metadata endpoints, end-to-end flow tests, and extensive edge case coverage. This addresses the buggy metadata review and update process by providing automated testing to catch regressions and ensure reliability.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.13",
+  "type": "feature",
+  "category": "testing",
+  "changes": [
+    {
+      "component": "jest.config.js",
+      "action": "create",
+      "changes": [
+        "Created Jest configuration file",
+        "Configured test environment (node)",
+        "Set up test file patterns",
+        "Configured coverage collection",
+        "Added test setup file"
+      ],
+      "sections": [
+        "Test configuration"
+      ]
+    },
+    {
+      "component": "tests/setup.js",
+      "action": "create",
+      "changes": [
+        "Created test setup file",
+        "Suppressed console logs during tests (unless DEBUG set)",
+        "Set test timeout to 30 seconds"
+      ],
+      "sections": [
+        "Test setup"
+      ]
+    },
+    {
+      "component": "tests/helpers/testDb.js",
+      "action": "create",
+      "changes": [
+        "Created database helper utilities for tests",
+        "Added cleanupTestData() for test isolation",
+        "Added createTestUser(), createTestLibrary(), createLibraryMember()",
+        "Added createTestPhoto(), createTestPhotoFile()",
+        "Added getPhotoState(), getWorkflowEvents(), countPhotosByState()",
+        "Provides clean test database state management"
+      ],
+      "sections": [
+        "Test utilities",
+        "Database helpers"
+      ]
+    },
+    {
+      "component": "tests/helpers/testAuth.js",
+      "action": "create",
+      "changes": [
+        "Created authentication helper utilities",
+        "Added createAuthenticatedSession() for test sessions",
+        "Added setupAuthenticatedUser() for complete user setup",
+        "Provides authenticated request agents for API testing"
+      ],
+      "sections": [
+        "Test utilities",
+        "Authentication helpers"
+      ]
+    },
+    {
+      "component": "tests/models/Photo.test.js",
+      "action": "create",
+      "changes": [
+        "Created unit tests for Photo model",
+        "Tests state transitions (metadata_entry → complete)",
+        "Tests workflow event creation",
+        "Tests timestamp updates on state transitions",
+        "Tests rollback on invalid transitions",
+        "Tests multiple sequential transitions",
+        "Tests metadata update operations (date_taken, location_text, description)",
+        "Tests partial updates and null value handling",
+        "Tests count operations by state",
+        "Tests exclusion of rejected photos from counts"
+      ],
+      "sections": [
+        "Unit tests",
+        "Model tests",
+        "State transitions"
+      ]
+    },
+    {
+      "component": "tests/api/metadata.test.js",
+      "action": "create",
+      "changes": [
+        "Created API integration tests for metadata flow",
+        "Tests PUT /api/photos/:id (update metadata)",
+        "Tests POST /api/photos/:id/complete (complete photo)",
+        "Tests end-to-end flow: update → complete → verify queue",
+        "Tests rapid sequential updates",
+        "Tests concurrent updates to different photos",
+        "Tests queue refresh after completion",
+        "Tests next-tasks queue count updates",
+        "Tests authentication and authorization requirements",
+        "Tests validation and error handling"
+      ],
+      "sections": [
+        "Integration tests",
+        "API tests",
+        "End-to-end tests"
+      ]
+    },
+    {
+      "component": "tests/api/metadata-edge-cases.test.js",
+      "action": "create",
+      "changes": [
+        "Created edge case and error scenario tests",
+        "Tests non-existent photo IDs",
+        "Tests invalid ID formats",
+        "Tests missing fields handling",
+        "Tests very long text fields",
+        "Tests special characters in text fields",
+        "Tests double completion prevention",
+        "Tests completion from wrong state",
+        "Tests rapid state transitions",
+        "Tests concurrent metadata updates",
+        "Tests update and complete race conditions",
+        "Tests queue consistency after multiple completions",
+        "Tests queue pagination after completion",
+        "Tests data integrity (metadata preservation)",
+        "Tests workflow event history"
+      ],
+      "sections": [
+        "Edge cases",
+        "Error scenarios",
+        "Race conditions",
+        "Concurrency tests"
+      ]
+    },
+    {
+      "component": "tests/README.md",
+      "action": "create",
+      "changes": [
+        "Created comprehensive test documentation",
+        "Documents test structure and organization",
+        "Provides running instructions",
+        "Documents test coverage",
+        "Provides examples for writing new tests",
+        "Documents debugging approaches"
+      ],
+      "sections": [
+        "Documentation",
+        "Test guide"
+      ]
+    }
+  ],
+  "benefits": [
+    "Automated testing catches bugs before deployment",
+    "Comprehensive coverage of metadata workflow",
+    "Tests edge cases and race conditions",
+    "Prevents regressions in critical workflow",
+    "Provides confidence in state transitions",
+    "Validates queue consistency",
+    "Tests authentication and authorization",
+    "Documents expected behavior through tests"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **jest.config.js** | Create | Jest configuration for test environment |
+| **tests/setup.js** | Create | Test setup with console suppression |
+| **tests/helpers/testDb.js** | Create | Database helper utilities for test isolation |
+| **tests/helpers/testAuth.js** | Create | Authentication helpers for test sessions |
+| **tests/models/Photo.test.js** | Create | Unit tests for Photo model state transitions |
+| **tests/api/metadata.test.js** | Create | API integration tests for metadata flow |
+| **tests/api/metadata-edge-cases.test.js** | Create | Edge case and error scenario tests |
+| **tests/README.md** | Create | Comprehensive test documentation |
+
+### Benefits
+
+- ✅ Automated testing catches bugs before deployment
+- ✅ Comprehensive coverage of entire metadata review and update workflow
+- ✅ Tests edge cases, race conditions, and error scenarios
+- ✅ Prevents regressions in critical workflow functionality
+- ✅ Provides confidence in state transitions and queue management
+- ✅ Validates authentication and authorization requirements
+- ✅ Documents expected behavior through test cases
+- ✅ Enables continuous integration and automated quality checks
+
+### Files Created
+
+- `jest.config.js` - Jest test configuration
+- `tests/setup.js` - Test setup file
+- `tests/helpers/testDb.js` - Database test utilities
+- `tests/helpers/testAuth.js` - Authentication test utilities
+- `tests/models/Photo.test.js` - Photo model unit tests
+- `tests/api/metadata.test.js` - Metadata API integration tests
+- `tests/api/metadata-edge-cases.test.js` - Edge case tests
+- `tests/README.md` - Test documentation
+
+### Test Coverage
+
+The test suite covers:
+
+1. **State Transitions**
+   - Transition from `metadata_entry` to `complete`
+   - Workflow event creation
+   - State validation
+   - Multiple sequential transitions
+   - Rollback on invalid transitions
+
+2. **Metadata Updates**
+   - Update date_taken, location_text, description
+   - Partial updates
+   - Null value handling
+   - Empty string handling
+   - Validation
+
+3. **End-to-End Flow**
+   - Update metadata → Complete photo → Verify queue update
+   - Rapid sequential updates
+   - Concurrent updates to different photos
+
+4. **Queue Management**
+   - Queue count updates after completion
+   - Photo removal from metadata_entry queue
+   - Next-tasks queue updates
+   - Queue pagination
+
+5. **Edge Cases**
+   - Non-existent photo IDs
+   - Invalid data formats
+   - Double completion prevention
+   - Race conditions
+   - Concurrent operations
+   - Very long text fields
+   - Special characters
+
+6. **Error Handling**
+   - Authentication requirements
+   - Authorization (role-based access)
+   - Invalid state transitions
+   - Data validation errors
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run specific test file
+npm test -- tests/api/metadata.test.js
+
+# Run with coverage
+npm test -- --coverage
+```
+
+### Testing Recommendations
+
+- Run tests before committing changes
+- Add new tests when fixing bugs
+- Update tests when adding features
+- Use tests to document expected behavior
+- Run tests in CI/CD pipeline
+
+---
+
 ## [2026-01-09] - Bug Fix & Enhancement: Metadata Entry Workflow Improvements
 
 ### Summary

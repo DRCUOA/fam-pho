@@ -1,199 +1,148 @@
-# Testing Guide
+# Test Suite for Metadata Review and Update Flow
 
-This directory contains test scripts and checklists to verify the frontend implementation.
+This directory contains comprehensive automated tests for the metadata review and update workflow.
 
-## Quick Start
+## Test Structure
 
-1. **Start the server:**
-   ```bash
-   npm start
-   # Or for development:
-   npm run dev
-   ```
+### Unit Tests
+- `models/Photo.test.js` - Tests for Photo model state transitions and data operations
 
-2. **Seed the database (if not already done):**
-   ```bash
-   npm run seed
-   ```
+### API Integration Tests
+- `api/metadata.test.js` - Main integration tests for metadata update and completion flow
+- `api/metadata-edge-cases.test.js` - Edge cases, error scenarios, and race conditions
 
-3. **Choose your testing method:**
+### Test Helpers
+- `helpers/testDb.js` - Database utilities for test setup and cleanup
+- `helpers/testAuth.js` - Authentication helpers for creating test sessions
 
----
+## Running Tests
 
-## Testing Methods
-
-### 1. Manual Testing Checklist (Recommended for UI)
-
-**File:** `frontend-test-checklist.md`
-
-A comprehensive checklist covering all UI features:
-- Login functionality
-- Dashboard display
-- Upload workflow
-- Triage workflow
-- Search functionality
-- Metadata entry
-- Accessibility & contrast
-- Mobile responsiveness
-
-**How to use:**
-1. Open `tests/frontend-test-checklist.md`
-2. Open the app in your browser: `http://localhost:3000`
-3. Go through each test item and check the boxes
-4. Document any issues found
-
-**Best for:** Thorough UI/UX verification, visual checks, user experience testing
-
----
-
-### 2. Browser Console Test (Quick Automated Checks)
-
-**File:** `browser-console-test.js`
-
-An automated script that runs in the browser console to check:
-- Page elements exist
-- Text contrast
-- Button sizes
-- CSS/JS loading
-- Accessibility attributes
-
-**How to use:**
-1. Open the app in your browser: `http://localhost:3000`
-2. Log in with test credentials
-3. Open browser DevTools (F12)
-4. Go to Console tab
-5. Copy and paste the contents of `browser-console-test.js`
-6. Press Enter
-7. Review the test results
-
-**Best for:** Quick verification, automated checks, development testing
-
----
-
-### 3. Integration Test (API Endpoints)
-
-**File:** `integration-test.js`
-
-Tests the backend API endpoints:
-- Health check
-- Authentication
-- Protected routes
-- Workflow queues
-- Search functionality
-
-**How to use:**
+### Run all tests
 ```bash
-# Make sure server is running first
-npm start
-
-# In another terminal:
-node tests/integration-test.js
+npm test
 ```
 
-**Best for:** Backend API verification, CI/CD, automated testing
+### Run tests in watch mode
+```bash
+npm run test:watch
+```
 
----
+### Run specific test file
+```bash
+npm test -- tests/api/metadata.test.js
+```
 
-### 4. Route Testing Manual (API with curl)
+### Run tests with coverage
+```bash
+npm test -- --coverage
+```
 
-**File:** `route-testing-manual.md`
+## Test Coverage
 
-Comprehensive curl commands for testing all API endpoints manually.
+The test suite covers:
 
-**How to use:**
-1. Follow the instructions in `route-testing-manual.md`
-2. Copy/paste curl commands into terminal
-3. Verify responses
+1. **State Transitions**
+   - Transition from `metadata_entry` to `complete`
+   - Workflow event creation
+   - State validation
+   - Multiple sequential transitions
 
-**Best for:** API debugging, manual endpoint testing, understanding API structure
+2. **Metadata Updates**
+   - Update date_taken, location_text, description
+   - Partial updates
+   - Null value handling
+   - Empty string handling
+   - Validation
 
----
+3. **End-to-End Flow**
+   - Update metadata → Complete photo → Verify queue update
+   - Rapid sequential updates
+   - Concurrent updates to different photos
 
-## Test Credentials
+4. **Queue Management**
+   - Queue count updates after completion
+   - Photo removal from metadata_entry queue
+   - Next-tasks queue updates
 
-After running `npm run seed`:
+5. **Edge Cases**
+   - Non-existent photo IDs
+   - Invalid data formats
+   - Double completion prevention
+   - Race conditions
+   - Concurrent operations
+   - Queue pagination
 
-- **Admin**: `admin@example.com` / `admin123`
-- **Editor**: `editor@example.com` / `editor123`
-- **Viewer**: `viewer@example.com` / `viewer123`
+6. **Error Handling**
+   - Authentication requirements
+   - Authorization (role-based access)
+   - Invalid state transitions
+   - Data validation errors
 
----
+## Test Database
 
-## Recommended Testing Workflow
+Tests use the same database as the application. The test helpers automatically:
+- Clean up test data before and after test runs
+- Create isolated test users and libraries
+- Clean up photos, files, and workflow events
 
-1. **Start with Integration Test** (quick API check)
-   ```bash
-   node tests/integration-test.js
-   ```
+**Important**: Tests will delete data matching test email patterns (`test%@example.com`). Ensure your development database doesn't contain important data with these email addresses.
 
-2. **Run Browser Console Test** (quick UI check)
-   - Open app → Login → Open console → Paste script
+## Writing New Tests
 
-3. **Complete Manual Checklist** (thorough verification)
-   - Go through `frontend-test-checklist.md` systematically
+### Example: Testing a new metadata field
 
-4. **Test on Multiple Devices**
-   - Desktop browser
-   - Mobile device (or browser DevTools mobile emulation)
-   - Tablet (if available)
+```javascript
+const testDb = require('../helpers/testDb');
+const testAuth = require('../helpers/testAuth');
 
----
+describe('New Metadata Field', () => {
+  let authAgent;
+  let photo;
 
-## What to Test
+  beforeAll(async () => {
+    const setup = await testAuth.setupAuthenticatedUser(testDb);
+    authAgent = setup.agent;
+  });
 
-### Core Workflow (MVP)
-- ✅ Login → Upload → Triage → Search
-- ✅ All UI elements visible and readable
-- ✅ No console errors
-- ✅ Proper error handling
-- ✅ Mobile responsiveness
+  beforeEach(async () => {
+    photo = await testDb.createTestPhoto(testLibrary.id, testUser.id, {
+      current_state: 'metadata_entry',
+    });
+  });
 
-### Accessibility
-- ✅ Text contrast meets WCAG standards
-- ✅ Touch targets are 44px minimum
-- ✅ Keyboard navigation works
-- ✅ Focus states are visible
+  afterEach(async () => {
+    // Cleanup
+  });
 
-### Error Handling
-- ✅ Network errors show user-friendly messages
-- ✅ Invalid inputs show appropriate errors
-- ✅ Session expiration redirects to login
+  test('should update new field', async () => {
+    const response = await authAgent
+      .put(`/api/photos/${photo.id}`)
+      .send({ new_field: 'value' })
+      .expect(200);
 
----
+    expect(response.body.photo.new_field).toBe('value');
+  });
+});
+```
 
-## Troubleshooting
+## Debugging Tests
 
-### Tests fail to connect
-- Ensure server is running: `npm start`
-- Check server is on port 3000: `http://localhost:3000`
+### Enable debug logging
+```bash
+DEBUG=1 npm test
+```
 
-### Browser console test shows errors
-- Check browser console for actual errors (red messages)
-- Verify you're logged in
-- Check network tab for failed API calls
+### Run single test
+```bash
+npm test -- -t "should update photo metadata successfully"
+```
 
-### Integration test fails
-- Verify database is seeded: `npm run seed`
-- Check database connection in `.env`
-- Ensure server is running
+### Inspect test database
+Tests use the same database connection. You can query the database during test runs to inspect state.
 
----
+## Continuous Integration
 
-## Reporting Issues
-
-When reporting test failures, include:
-1. Which test method you used
-2. Browser/device information
-3. Console errors (if any)
-4. Screenshots (for UI issues)
-5. Steps to reproduce
-
----
-
-## Next Steps
-
-After verifying the core workflow:
-- Test edge cases (large files, many photos, etc.)
-- Test with different user roles
-- Test performance with many photos
-- Test backup/restore functionality (if implemented)
+These tests are designed to run in CI/CD pipelines. Ensure:
+1. Database is set up and migrated
+2. Environment variables are configured
+3. Test database is isolated or properly cleaned

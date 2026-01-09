@@ -147,31 +147,36 @@ app.use(notFoundHandler);
 // Error handler
 app.use(errorHandler);
 
-// Start server
-const server = app.listen(config.port, config.host, () => {
-  logger.info(`Server running on http://${config.host}:${config.port}`);
-  logger.info(`Environment: ${config.env}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  server.close(async () => {
-    logger.info('Server closed');
-    const pool = require('./models/db');
-    await pool.end();
-    process.exit(0);
+// Start server (skip in test environment)
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(config.port, config.host, () => {
+    logger.info(`Server running on http://${config.host}:${config.port}`);
+    logger.info(`Environment: ${config.env}`);
   });
-});
+}
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  server.close(async () => {
-    logger.info('Server closed');
-    const pool = require('./models/db');
-    await pool.end();
-    process.exit(0);
+// Graceful shutdown (skip in test environment)
+if (process.env.NODE_ENV !== 'test' && server) {
+  process.on('SIGTERM', async () => {
+    logger.info('SIGTERM received, shutting down gracefully');
+    server.close(async () => {
+      logger.info('Server closed');
+      const pool = require('./models/db');
+      await pool.end();
+      process.exit(0);
+    });
   });
-});
+
+  process.on('SIGINT', async () => {
+    logger.info('SIGINT received, shutting down gracefully');
+    server.close(async () => {
+      logger.info('Server closed');
+      const pool = require('./models/db');
+      await pool.end();
+      process.exit(0);
+    });
+  });
+}
 
 module.exports = app;
