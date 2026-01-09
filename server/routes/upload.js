@@ -16,14 +16,18 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
-// Configure multer for file uploads
+// Configure multer for file uploads (Multer 2.x compatible)
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    const libraryId = req.body.library_id || req.query.library_id;
-    const { fullPath } = FileService.generateStoragePath(libraryId || 0, file.originalname, 'incoming');
-    const dir = path.dirname(fullPath);
-    await fs.mkdir(dir, { recursive: true });
-    cb(null, dir);
+    try {
+      const libraryId = req.body.library_id || req.query.library_id;
+      const { fullPath } = FileService.generateStoragePath(libraryId || 0, file.originalname, 'incoming');
+      const dir = path.dirname(fullPath);
+      await fs.mkdir(dir, { recursive: true });
+      cb(null, dir);
+    } catch (error) {
+      cb(error, null);
+    }
   },
   filename: (req, file, cb) => {
     const timestamp = Date.now();

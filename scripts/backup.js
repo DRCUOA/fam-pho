@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const archiver = require('archiver');
@@ -14,7 +15,7 @@ class BackupService {
     logger.info(`Starting backup to ${backupDir}`);
 
     try {
-      // Backup database
+      // Backup database (PostgreSQL dump)
       await this.backupDatabase(backupDir);
 
       // Backup storage directories
@@ -40,12 +41,22 @@ class BackupService {
   }
 
   static async backupDatabase(backupDir) {
-    const dbPath = config.database.path;
-    const backupDbPath = path.join(backupDir, 'database.db');
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+    
+    const backupDbPath = path.join(backupDir, 'database.sql');
+    const connectionString = config.database.connectionString || 
+      `postgresql://${config.database.user}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.database}`;
 
-    // Copy database file
-    await fs.copyFile(dbPath, backupDbPath);
-    logger.info('Database backed up');
+    // Use pg_dump to backup PostgreSQL database
+    try {
+      await execAsync(`pg_dump "${connectionString}" > "${backupDbPath}"`);
+      logger.info('Database backed up');
+    } catch (error) {
+      logger.error('Database backup failed:', error);
+      throw error;
+    }
   }
 
   static async backupStorage(backupDir) {
@@ -89,7 +100,7 @@ class BackupService {
   static async createArchive(backupDir, timestamp) {
     return new Promise((resolve, reject) => {
       const archivePath = path.join(config.backup.path, `backup-${timestamp}.zip`);
-      const output = fs.createWriteStream(archivePath);
+      const output = fsSync.createWriteStream(archivePath);
       const archive = archiver('zip', { zlib: { level: 9 } });
 
       output.on('close', () => {

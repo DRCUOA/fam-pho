@@ -1,5 +1,9 @@
 require('dotenv').config();
 const path = require('path');
+const os = require('os');
+
+// On macOS with Homebrew PostgreSQL, default user is the macOS username
+const defaultDbUser = process.platform === 'darwin' ? os.userInfo().username : 'postgres';
 
 const config = {
   env: process.env.NODE_ENV || 'development',
@@ -16,7 +20,13 @@ const config = {
   },
 
   database: {
-    path: process.env.DB_PATH || path.join(__dirname, '../../database/fam-pho.db'),
+    connectionString: process.env.DATABASE_URL || `postgresql://${defaultDbUser}@localhost:5432/fam_pho`,
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    database: process.env.DB_NAME || 'fam_pho',
+    user: process.env.DB_USER || defaultDbUser,
+    password: process.env.DB_PASSWORD || '',
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   },
 
   storage: {

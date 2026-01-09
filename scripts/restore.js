@@ -2,8 +2,12 @@ const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
 const AdmZip = require('adm-zip');
+const { exec } = require('child_process');
+const { promisify } = require('util');
 const config = require('../server/utils/config');
 const logger = require('../server/utils/logger');
+
+const execAsync = promisify(exec);
 
 class RestoreService {
   static async restoreBackup(backupPath) {
@@ -66,16 +70,26 @@ class RestoreService {
   }
 
   static async restoreDatabase(extractDir) {
-    const backupDbPath = path.join(extractDir, 'database.db');
-    const dbPath = config.database.path;
+    const backupDbPath = path.join(extractDir, 'database.sql');
+    
+    try {
+      await fs.access(backupDbPath);
+    } catch {
+      logger.warn('No database backup found');
+      return;
+    }
 
-    // Backup current database
-    const currentBackup = dbPath + '.pre-restore-' + Date.now();
-    await fs.copyFile(dbPath, currentBackup);
+    const connectionString = config.database.connectionString || 
+      `postgresql://${config.database.user}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.database}`;
 
-    // Restore
-    await fs.copyFile(backupDbPath, dbPath);
-    logger.info('Database restored');
+    // Use psql to restore PostgreSQL database
+    try {
+      await execAsync(`psql "${connectionString}" < "${backupDbPath}"`);
+      logger.info('Database restored');
+    } catch (error) {
+      logger.error('Database restore failed:', error);
+      throw error;
+    }
   }
 
   static async restoreStorage(extractDir) {

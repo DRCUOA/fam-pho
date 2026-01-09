@@ -8,3 +8,4 @@ NEVER allow a installed library to be used if it has any npm critical vulnerabil
 
 Always do a full update for each atomic change (update the json and markdown table) in documentation/Full_PID/00-project-initiation/CHANGELOG.md
 
+Always draft a ~50 commit msg when changes are finished and remind human to commit.  Display draft and reminder in the console where the prompt was entered (do NOT create a file for it)
