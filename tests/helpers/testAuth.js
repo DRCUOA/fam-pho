@@ -13,10 +13,13 @@ const app = require('../../server/index');
 async function createAuthenticatedSession(email = 'test@example.com', password = 'test123') {
   const agent = request.agent(app);
   
-  await agent
+  const response = await agent
     .post('/api/auth/login')
-    .send({ email, password })
-    .expect(200);
+    .send({ email, password });
+  
+  if (response.status !== 200) {
+    throw new Error(`Login failed for ${email}: ${response.status} - ${JSON.stringify(response.body)}`);
+  }
   
   return agent;
 }
@@ -27,10 +30,21 @@ async function createAuthenticatedSession(email = 'test@example.com', password =
  */
 async function setupAuthenticatedUser(testDb, email = 'test@example.com') {
   const user = await testDb.createTestUser(email);
+  if (!user) {
+    throw new Error(`Failed to create test user: ${email}`);
+  }
+  
   const library = await testDb.createTestLibrary('Test Library', user.id);
+  if (!library) {
+    throw new Error(`Failed to create test library for user: ${email}`);
+  }
+  
   await testDb.createLibraryMember(library.id, user.id, 'owner');
   
   const agent = await createAuthenticatedSession(email);
+  if (!agent) {
+    throw new Error(`Failed to authenticate user: ${email}`);
+  }
   
   return { user, library, agent };
 }

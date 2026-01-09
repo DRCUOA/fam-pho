@@ -72,6 +72,14 @@ class API {
     return this.request('/auth/me', { suppressErrors: true });
   }
 
+  // Libraries
+  static async createLibrary(name) {
+    return this.request('/libraries', {
+      method: 'POST',
+      body: { name },
+    });
+  }
+
   // Upload
   static async uploadPhotos(libraryId, files, onProgress = null) {
     if (!files || files.length === 0) {

@@ -14,12 +14,18 @@ describe('Metadata Flow - Edge Cases and Error Scenarios', () => {
   let authAgent;
 
   beforeAll(async () => {
+    // Clean up any existing test data first
     await testDb.cleanupTestData();
     
     const setup = await testAuth.setupAuthenticatedUser(testDb, 'edgecasetest@example.com');
     testUser = setup.user;
     testLibrary = setup.library;
     authAgent = setup.agent;
+    
+    // Verify setup succeeded
+    if (!testUser || !testLibrary || !authAgent) {
+      throw new Error('Failed to set up test user and library');
+    }
   });
 
   afterAll(async () => {

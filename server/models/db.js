@@ -16,8 +16,8 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-// Log database operations in development
-if (config.env === 'development') {
+// Log database operations in development (skip in test environment)
+if (config.env === 'development' && process.env.NODE_ENV !== 'test') {
   pool.on('connect', (client) => {
     logger.debug('New client connected to database');
   });
@@ -27,14 +27,16 @@ if (config.env === 'development') {
   });
 }
 
-// Test connection on startup
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    logger.error('Database connection failed:', err);
-  } else {
-    logger.info('Database connected successfully');
-  }
-});
+// Test connection on startup (skip in test environment)
+if (process.env.NODE_ENV !== 'test') {
+  pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+      logger.error('Database connection failed:', err);
+    } else {
+      logger.info('Database connected successfully');
+    }
+  });
+}
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

@@ -107,6 +107,8 @@ app.use(attachUser);
 // Note: More specific routes (like /photos/search, /photos/:id/complete) must be registered BEFORE
 // parameterized routes (like /photos/:id) to avoid route conflicts
 app.use('/api/auth', authRoutes);
+const libraryRoutes = require('./routes/libraries');
+app.use('/api', libraryRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api', searchRoutes); // Register before photoRoutes to handle /photos/search
 app.use('/api', workflowRoutes); // Register before photoRoutes to handle /photos/:id/complete

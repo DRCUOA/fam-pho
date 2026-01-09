@@ -47,6 +47,17 @@ router.post('/login', loginLimiter, [
     // Create session
     req.session.userId = user.id;
     req.session.userEmail = user.email;
+    
+    // Save session explicitly to ensure cookie is set
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          logger.error('Session save error:', err);
+          return reject(err);
+        }
+        resolve();
+      });
+    });
 
     // Update last login
     await User.updateLastLogin(user.id);
@@ -98,7 +109,24 @@ router.get('/me', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const libraries = await User.getLibraries(user.id);
+    let libraries = await User.getLibraries(user.id);
+
+    // If user has no libraries, automatically create a default one
+    if (libraries.length === 0) {
+      const Library = require('../models/Library');
+      const defaultLibrary = await Library.create({
+        name: `${user.display_name || user.email.split('@')[0]}'s Library`,
+        created_by: user.id,
+      });
+      
+      // Add user as owner
+      await Library.addMember(defaultLibrary.id, user.id, 'owner');
+      
+      // Reload libraries
+      libraries = await User.getLibraries(user.id);
+      
+      logger.info(`Auto-created default library for user ${user.email}`);
+    }
 
     res.json({
       user: {

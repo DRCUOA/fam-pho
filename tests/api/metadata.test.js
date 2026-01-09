@@ -14,6 +14,7 @@ describe('Metadata Review and Update API', () => {
   let authAgent;
 
   beforeAll(async () => {
+    // Clean up any existing test data first
     await testDb.cleanupTestData();
     
     // Set up authenticated user
@@ -21,6 +22,11 @@ describe('Metadata Review and Update API', () => {
     testUser = setup.user;
     testLibrary = setup.library;
     authAgent = setup.agent;
+    
+    // Verify setup succeeded
+    if (!testUser || !testLibrary || !authAgent) {
+      throw new Error('Failed to set up test user and library');
+    }
   });
 
   afterAll(async () => {
@@ -39,10 +45,14 @@ describe('Metadata Review and Update API', () => {
 
     afterEach(async () => {
       if (photo) {
-        const pool = require('../../server/models/db');
-        await pool.query('DELETE FROM photo_workflow_events WHERE photo_id = $1', [photo.id]);
-        await pool.query('DELETE FROM photo_files WHERE photo_id = $1', [photo.id]);
-        await pool.query('DELETE FROM photos WHERE id = $1', [photo.id]);
+        try {
+          const pool = require('../../server/models/db');
+          await pool.query('DELETE FROM photo_workflow_events WHERE photo_id = $1', [photo.id]);
+          await pool.query('DELETE FROM photo_files WHERE photo_id = $1', [photo.id]);
+          await pool.query('DELETE FROM photos WHERE id = $1', [photo.id]);
+        } catch (error) {
+          // Ignore cleanup errors - photo may already be deleted
+        }
       }
     });
 
@@ -128,9 +138,15 @@ describe('Metadata Review and Update API', () => {
         .send({ location_text: 'Test' })
         .expect(403);
 
+      // Cleanup: delete activity logs first, then user
       const pool = require('../../server/models/db');
-      await pool.query('DELETE FROM library_members WHERE user_id = $1', [viewer.id]);
-      await pool.query('DELETE FROM users WHERE id = $1', [viewer.id]);
+      try {
+        await pool.query('DELETE FROM activity_log WHERE actor_user_id = $1', [viewer.id]);
+        await pool.query('DELETE FROM library_members WHERE user_id = $1', [viewer.id]);
+        await pool.query('DELETE FROM users WHERE id = $1', [viewer.id]);
+      } catch (error) {
+        // Ignore cleanup errors - test data will be cleaned up by afterAll
+      }
     });
 
     test('should not change photo state on metadata update', async () => {
@@ -159,10 +175,14 @@ describe('Metadata Review and Update API', () => {
 
     afterEach(async () => {
       if (photo) {
-        const pool = require('../../server/models/db');
-        await pool.query('DELETE FROM photo_workflow_events WHERE photo_id = $1', [photo.id]);
-        await pool.query('DELETE FROM photo_files WHERE photo_id = $1', [photo.id]);
-        await pool.query('DELETE FROM photos WHERE id = $1', [photo.id]);
+        try {
+          const pool = require('../../server/models/db');
+          await pool.query('DELETE FROM photo_workflow_events WHERE photo_id = $1', [photo.id]);
+          await pool.query('DELETE FROM photo_files WHERE photo_id = $1', [photo.id]);
+          await pool.query('DELETE FROM photos WHERE id = $1', [photo.id]);
+        } catch (error) {
+          // Ignore cleanup errors - photo may already be deleted
+        }
       }
     });
 
@@ -225,9 +245,15 @@ describe('Metadata Review and Update API', () => {
         .post(`/api/photos/${photo.id}/complete`)
         .expect(403);
 
+      // Cleanup: delete activity logs first, then user
       const pool = require('../../server/models/db');
-      await pool.query('DELETE FROM library_members WHERE user_id = $1', [viewer.id]);
-      await pool.query('DELETE FROM users WHERE id = $1', [viewer.id]);
+      try {
+        await pool.query('DELETE FROM activity_log WHERE actor_user_id = $1', [viewer.id]);
+        await pool.query('DELETE FROM library_members WHERE user_id = $1', [viewer.id]);
+        await pool.query('DELETE FROM users WHERE id = $1', [viewer.id]);
+      } catch (error) {
+        // Ignore cleanup errors - test data will be cleaned up by afterAll
+      }
     });
   });
 
@@ -248,10 +274,14 @@ describe('Metadata Review and Update API', () => {
 
     afterEach(async () => {
       if (photo1) {
-        const pool = require('../../server/models/db');
-        await pool.query('DELETE FROM photo_workflow_events WHERE photo_id IN ($1, $2)', [photo1.id, photo2.id]);
-        await pool.query('DELETE FROM photo_files WHERE photo_id IN ($1, $2)', [photo1.id, photo2.id]);
-        await pool.query('DELETE FROM photos WHERE id IN ($1, $2)', [photo1.id, photo2.id]);
+        try {
+          const pool = require('../../server/models/db');
+          await pool.query('DELETE FROM photo_workflow_events WHERE photo_id IN ($1, $2)', [photo1.id, photo2.id]);
+          await pool.query('DELETE FROM photo_files WHERE photo_id IN ($1, $2)', [photo1.id, photo2.id]);
+          await pool.query('DELETE FROM photos WHERE id IN ($1, $2)', [photo1.id, photo2.id]);
+        } catch (error) {
+          // Ignore cleanup errors - photos may already be deleted
+        }
       }
     });
 
@@ -298,14 +328,12 @@ describe('Metadata Review and Update API', () => {
     });
 
     test('should handle rapid sequential updates and completion', async () => {
-      // Update metadata multiple times rapidly
-      await Promise.all([
-        authAgent.put(`/api/photos/${photo1.id}`).send({ location_text: 'Location 1' }),
-        authAgent.put(`/api/photos/${photo1.id}`).send({ location_text: 'Location 2' }),
-        authAgent.put(`/api/photos/${photo1.id}`).send({ location_text: 'Location 3' }),
-      ]);
+      // Update metadata multiple times rapidly (sequentially to ensure order)
+      await authAgent.put(`/api/photos/${photo1.id}`).send({ location_text: 'Location 1' });
+      await authAgent.put(`/api/photos/${photo1.id}`).send({ location_text: 'Location 2' });
+      await authAgent.put(`/api/photos/${photo1.id}`).send({ location_text: 'Location 3' });
 
-      // Verify final state
+      // Verify final state (should be the last update)
       const response = await authAgent
         .get(`/api/photos/${photo1.id}`)
         .expect(200);
@@ -379,10 +407,14 @@ describe('Metadata Review and Update API', () => {
 
     afterEach(async () => {
       if (photo) {
-        const pool = require('../../server/models/db');
-        await pool.query('DELETE FROM photo_workflow_events WHERE photo_id = $1', [photo.id]);
-        await pool.query('DELETE FROM photo_files WHERE photo_id = $1', [photo.id]);
-        await pool.query('DELETE FROM photos WHERE id = $1', [photo.id]);
+        try {
+          const pool = require('../../server/models/db');
+          await pool.query('DELETE FROM photo_workflow_events WHERE photo_id = $1', [photo.id]);
+          await pool.query('DELETE FROM photo_files WHERE photo_id = $1', [photo.id]);
+          await pool.query('DELETE FROM photos WHERE id = $1', [photo.id]);
+        } catch (error) {
+          // Ignore cleanup errors - photo may already be deleted
+        }
       }
     });
 

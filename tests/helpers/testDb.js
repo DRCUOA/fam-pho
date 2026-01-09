@@ -48,12 +48,19 @@ async function cleanupTestData() {
       await client.query('DELETE FROM albums WHERE library_id = ANY($1)', [testLibraryIds]);
     }
     
+    // Delete activity logs for test users before deleting users
+    await client.query('DELETE FROM activity_log WHERE actor_user_id = ANY($1)', [testUserIds]);
+    
     await client.query('DELETE FROM libraries WHERE created_by = ANY($1)', [testUserIds]);
     await client.query('DELETE FROM users WHERE id = ANY($1)', [testUserIds]);
     
     await client.query('COMMIT');
   } catch (error) {
-    await client.query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      // Ignore rollback errors
+    }
     // Don't throw - just log, as cleanup failures shouldn't break tests
     if (process.env.DEBUG) {
       console.error('Cleanup error (non-fatal):', error.message);
@@ -64,10 +71,28 @@ async function cleanupTestData() {
 }
 
 /**
- * Create a test user
+ * Create a test user (or update existing if already exists to ensure password matches)
  */
 async function createTestUser(email = 'test@example.com', password = 'test123', displayName = 'Test User') {
+  // Check if user already exists
+  const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  
+  // Hash password
   const passwordHash = await argon2.hash(password);
+  
+  if (existing.rows.length > 0) {
+    // Update existing user to ensure password matches (for test consistency)
+    const result = await pool.query(
+      `UPDATE users 
+       SET password_hash = $1, display_name = $2, is_active = TRUE
+       WHERE email = $3
+       RETURNING *`,
+      [passwordHash, displayName, email]
+    );
+    return result.rows[0];
+  }
+  
+  // Create new user
   const result = await pool.query(
     `INSERT INTO users (email, password_hash, display_name, is_active)
      VALUES ($1, $2, $3, TRUE)
@@ -78,9 +103,19 @@ async function createTestUser(email = 'test@example.com', password = 'test123', 
 }
 
 /**
- * Create a test library
+ * Create a test library (or return existing if already exists for this user)
  */
 async function createTestLibrary(name = 'Test Library', createdBy) {
+  // Check if library already exists for this user
+  const existing = await pool.query(
+    'SELECT * FROM libraries WHERE name = $1 AND created_by = $2',
+    [name, createdBy]
+  );
+  if (existing.rows.length > 0) {
+    return existing.rows[0];
+  }
+  
+  // Create new library
   const result = await pool.query(
     `INSERT INTO libraries (name, created_by)
      VALUES ($1, $2)
@@ -91,9 +126,29 @@ async function createTestLibrary(name = 'Test Library', createdBy) {
 }
 
 /**
- * Create a library member
+ * Create a library member (or return existing if already exists)
  */
 async function createLibraryMember(libraryId, userId, role = 'owner') {
+  // Check if membership already exists
+  const existing = await pool.query(
+    'SELECT * FROM library_members WHERE library_id = $1 AND user_id = $2',
+    [libraryId, userId]
+  );
+  if (existing.rows.length > 0) {
+    // Update role if different
+    if (existing.rows[0].role !== role) {
+      const result = await pool.query(
+        `UPDATE library_members SET role = $1, status = 'active'
+         WHERE library_id = $2 AND user_id = $3
+         RETURNING *`,
+        [role, libraryId, userId]
+      );
+      return result.rows[0];
+    }
+    return existing.rows[0];
+  }
+  
+  // Create new membership
   const result = await pool.query(
     `INSERT INTO library_members (library_id, user_id, role, status)
      VALUES ($1, $2, $3, 'active')
@@ -129,20 +184,21 @@ async function createTestPhoto(libraryId, uploadedBy, options = {}) {
  */
 async function createTestPhotoFile(photoId, options = {}) {
   const {
-    kind = 'master',
+    kind = 'original', // Must be one of: 'original', 'preview', 'thumbnail', 'derivative'
     storage_key = `test/${photoId}/test.jpg`,
     filename = 'test.jpg',
     mime_type = 'image/jpeg',
     bytes = 1024,
     width = 1920,
     height = 1080,
+    sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', // Empty file hash
   } = options;
 
   const result = await pool.query(
-    `INSERT INTO photo_files (photo_id, kind, storage_key, filename, mime_type, bytes, width, height)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO photo_files (photo_id, kind, storage_key, filename, mime_type, bytes, width, height, sha256)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING *`,
-    [photoId, kind, storage_key, filename, mime_type, bytes, width, height]
+    [photoId, kind, storage_key, filename, mime_type, bytes, width, height, sha256]
   );
   return result.rows[0];
 }

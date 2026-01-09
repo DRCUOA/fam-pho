@@ -173,8 +173,36 @@ function setupLoginHandlers() {
       }
 
       try {
-        await API.login(email, password);
-        await init();
+        const loginResult = await API.login(email, password);
+        currentUser = loginResult.user;
+        
+        // Small delay to ensure session cookie is set before making next request
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Get user data including libraries after login
+        try {
+          const data = await API.getCurrentUser();
+          currentUser = data.user;
+          currentLibrary = data.libraries && data.libraries.length > 0 ? data.libraries[0] : null;
+          
+          if (currentLibrary) {
+            showDashboard();
+          } else {
+            // User has no libraries - show dashboard with a message
+            showDashboard();
+            showError('You are not a member of any libraries. Please contact an administrator.', 10000);
+          }
+        } catch (error) {
+          // If getCurrentUser fails after login, try to show dashboard anyway with logged in user
+          console.error('Failed to get user data after login:', error);
+          if (currentUser) {
+            // We have user from login response, show dashboard
+            showDashboard();
+            showError('Login successful. Some features may be limited until libraries load.', 5000);
+          } else {
+            showError('Login successful but failed to load user data. Please refresh the page.');
+          }
+        }
       } catch (error) {
         showError('Login failed: ' + error.message);
       } finally {
@@ -195,19 +223,47 @@ function setupDashboardHandlers() {
   const searchBtn = document.getElementById('btn-search');
   const logoutBtn = document.getElementById('btn-logout');
 
-  if (uploadBtn) uploadBtn.addEventListener('click', () => showUpload());
-  if (triageBtn) triageBtn.addEventListener('click', () => showTriage());
+  if (uploadBtn) uploadBtn.addEventListener('click', () => {
+    if (!currentLibrary || !currentLibrary.id) {
+      showError('You need to be a member of a library to upload photos.');
+      return;
+    }
+    showUpload();
+  });
+  if (triageBtn) triageBtn.addEventListener('click', () => {
+    if (!currentLibrary || !currentLibrary.id) {
+      showError('You need to be a member of a library to access the review queue.');
+      return;
+    }
+    showTriage();
+  });
   if (metadataBtn) metadataBtn.addEventListener('click', () => {
+    if (!currentLibrary || !currentLibrary.id) {
+      showError('You need to be a member of a library to enter metadata.');
+      return;
+    }
     // Load first photo in metadata_entry state
     loadNextTasks().then(() => {
       const metadataBtn2 = document.getElementById('btn-next-metadata');
       if (metadataBtn2) metadataBtn2.click();
     });
   });
-  if (searchBtn) searchBtn.addEventListener('click', () => showSearch());
+  if (searchBtn) searchBtn.addEventListener('click', () => {
+    if (!currentLibrary || !currentLibrary.id) {
+      showError('You need to be a member of a library to search.');
+      return;
+    }
+    showSearch();
+  });
   
   const rejectedBtn = document.getElementById('btn-rejected');
-  if (rejectedBtn) rejectedBtn.addEventListener('click', () => showRejected());
+  if (rejectedBtn) rejectedBtn.addEventListener('click', () => {
+    if (!currentLibrary || !currentLibrary.id) {
+      showError('You need to be a member of a library to view rejected photos.');
+      return;
+    }
+    showRejected();
+  });
   
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
@@ -220,11 +276,30 @@ function setupDashboardHandlers() {
     });
   }
 
-  // Load next tasks
-  loadNextTasks();
+  // Load next tasks (only if user has a library)
+  if (currentLibrary && currentLibrary.id) {
+    loadNextTasks();
+  } else {
+    // User has no libraries - show message in next tasks area
+    const nextTasksDiv = document.getElementById('next-tasks');
+    if (nextTasksDiv) {
+      nextTasksDiv.innerHTML = `
+        <div class="text-center py-6 bg-yellow-50 rounded-lg border border-yellow-200">
+          <i class="fa-solid fa-exclamation-triangle text-3xl text-yellow-600 mb-2"></i>
+          <p class="text-neutral-900 font-medium mb-1">No Library Access</p>
+          <p class="text-sm text-neutral-600">You are not a member of any libraries. Please contact an administrator.</p>
+        </div>
+      `;
+    }
+  }
 }
 
 async function loadNextTasks() {
+  if (!currentLibrary || !currentLibrary.id) {
+    console.warn('Cannot load tasks: no library available');
+    return;
+  }
+  
   try {
     const tasks = await API.getNextTasks(currentLibrary.id);
     updateTaskCounts(tasks.queues);
