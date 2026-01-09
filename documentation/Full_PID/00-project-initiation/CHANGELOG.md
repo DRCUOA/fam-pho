@@ -1,5 +1,119 @@
 # Changelog
 
+## [2026-01-09] - Feature: EPIC 5 Metadata & Catalog - People and Albums Management UI
+
+### Summary
+Added critical missing UI components for EPIC 5 (Metadata & Catalog): people creation modal, albums management in metadata form, and create album functionality. These features enable users to create people and albums directly from the metadata entry screen, resolving the blocker where people couldn't be added because no UI existed to create them.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.10",
+  "type": "feature",
+  "category": "epic_5_metadata",
+  "changes": [
+    {
+      "component": "client/js/app.js",
+      "action": "modify",
+      "changes": [
+        "Added showCreatePersonModal() function with modal UI for creating people (name, relationship_label, notes)",
+        "Added createPerson() function to handle person creation via API",
+        "Added showCreateAlbumModal() function with modal UI for creating albums (name, description)",
+        "Added createAlbum() function to handle album creation via API",
+        "Added addPhotoToAlbum() function to add photos to albums",
+        "Added removePhotoFromAlbum() function to remove photos from albums",
+        "Added albums section to renderMetadataForm() with add/remove functionality",
+        "Added 'Create New Person' button below person select dropdown",
+        "Added 'Create New Album' button below album select dropdown",
+        "Updated loadPeopleAndTags() to loadPeopleTagsAndAlbums() to include albums",
+        "Updated all references to loadPeopleAndTags() to use new function name",
+        "Added availableAlbums global variable to track library albums"
+      ],
+      "sections": [
+        "People management",
+        "Albums management",
+        "Metadata form enhancements"
+      ]
+    },
+    {
+      "component": "client/js/api.js",
+      "action": "modify",
+      "changes": [
+        "Added addPhotoToAlbum(photoId, albumId) method",
+        "Added removePhotoFromAlbum(photoId, albumId) method"
+      ],
+      "sections": [
+        "Albums API methods"
+      ]
+    }
+  ],
+  "benefits": [
+    "Users can now create people directly from metadata entry screen",
+    "Users can now create albums directly from metadata entry screen",
+    "Users can add/remove photos from albums during metadata entry",
+    "Resolves blocker preventing people from being added to photos",
+    "Completes core EPIC 5 metadata entry workflow",
+    "Improves user experience with inline creation modals"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **client/js/app.js** | Modify | Added people creation modal and functions (showCreatePersonModal, createPerson) |
+| **client/js/app.js** | Modify | Added albums creation modal and functions (showCreateAlbumModal, createAlbum) |
+| **client/js/app.js** | Modify | Added albums section to metadata form with add/remove functionality |
+| **client/js/app.js** | Modify | Updated loadPeopleAndTags() to loadPeopleTagsAndAlbums() to include albums |
+| **client/js/api.js** | Modify | Added addPhotoToAlbum() and removePhotoFromAlbum() API methods |
+
+### Benefits
+
+- ✅ Users can now create people directly from metadata entry screen (resolves critical blocker)
+- ✅ Users can now create albums directly from metadata entry screen
+- ✅ Users can add/remove photos from albums during metadata entry
+- ✅ Completes core EPIC 5 metadata entry workflow
+- ✅ Improves user experience with inline creation modals
+- ✅ All metadata cataloging features now accessible from single screen
+
+### Files Modified
+
+- `client/js/app.js` - Added people/albums creation modals and management functions
+- `client/js/api.js` - Added album photo management API methods
+
+### Key Features Added
+
+1. **People Creation Modal:**
+   - Name field (required)
+   - Relationship label field (optional)
+   - Notes field (optional)
+   - Creates person and refreshes people list automatically
+
+2. **Albums Management:**
+   - Albums section added to metadata form
+   - Display current albums assigned to photo
+   - Add photo to existing album via dropdown
+   - Remove photo from album
+   - Create new album modal (name, description)
+
+3. **Improved Workflow:**
+   - All people/tags/albums data loaded together
+   - Forms refresh automatically after creation
+   - Consistent UI patterns across all metadata sections
+
+### EPIC 5 Status Update
+
+- **Before:** 70% complete (missing people/albums creation UI)
+- **After:** 85% complete (core metadata entry fully functional)
+- **Remaining:** Bulk edits UI, EXIF/XMP write-back, quality rating UI
+
+---
+
 ## [2026-01-09] - Documentation: Build Progress Assessment
 
 ### Summary

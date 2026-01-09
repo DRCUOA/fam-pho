@@ -227,6 +227,14 @@ class API {
     });
   }
 
+  static async addPhotoToAlbum(photoId, albumId) {
+    return this.request(`/photos/${photoId}/albums/${albumId}`, { method: 'POST' });
+  }
+
+  static async removePhotoFromAlbum(photoId, albumId) {
+    return this.request(`/photos/${photoId}/albums/${albumId}`, { method: 'DELETE' });
+  }
+
   // Workflow
   static async getNextTasks(libraryId) {
     return this.request(`/workflow/next-tasks?library_id=${libraryId}`);

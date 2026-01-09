@@ -849,6 +849,7 @@ window.triageAction = async function(photoId, action) {
 let currentMetadataPhoto = null;
 let availablePeople = [];
 let availableTags = [];
+let availableAlbums = [];
 
 function setupMetadataHandlers(photoId) {
   const backBtn = document.getElementById('btn-back');
@@ -864,19 +865,21 @@ function setupMetadataHandlers(photoId) {
   }
 
   loadPhotoMetadata(photoId);
-  loadPeopleAndTags();
+  loadPeopleTagsAndAlbums();
 }
 
-async function loadPeopleAndTags() {
+async function loadPeopleTagsAndAlbums() {
   try {
-    const [peopleData, tagsData] = await Promise.all([
+    const [peopleData, tagsData, albumsData] = await Promise.all([
       API.getPeople(currentLibrary.id),
       API.getTags(currentLibrary.id),
+      API.getAlbums(currentLibrary.id),
     ]);
     availablePeople = peopleData.people || [];
     availableTags = tagsData.tags || [];
+    availableAlbums = albumsData.albums || [];
   } catch (error) {
-    console.error('Failed to load people/tags:', error);
+    console.error('Failed to load people/tags/albums:', error);
   }
 }
 
@@ -947,9 +950,10 @@ function renderMetadataForm(photo) {
   // Format date for input
   const dateValue = photo.date_taken ? new Date(photo.date_taken).toISOString().split('T')[0] : '';
   
-  // Get current people and tags
-  const currentPeople = photo.people || [];
-  const currentTags = photo.tags || [];
+    // Get current people, tags, and albums
+    const currentPeople = photo.people || [];
+    const currentTags = photo.tags || [];
+    const currentAlbums = photo.albums || [];
 
   form.innerHTML = `
     <div>
@@ -991,18 +995,26 @@ function renderMetadataForm(photo) {
           </span>
         `).join('') : '<span class="text-neutral-500 text-sm">No people added yet</span>'}
       </div>
-      <div class="flex gap-2 items-center">
-        <select id="person-select" class="flex-1 p-2 border rounded-lg min-h-[44px]">
-          <option value="">Select person to add...</option>
-          ${availablePeople && availablePeople.length > 0 ? availablePeople.filter(p => !currentPeople.find(cp => cp.id === p.id)).map(p => `
-            <option value="${p.id}">${escapeHtml(p.name)}</option>
-          `).join('') : '<option value="" disabled>No people available. Create people first.</option>'}
-        </select>
-        <button id="btn-add-person" 
-                onclick="addPersonTag()" 
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg min-h-[44px] min-w-[80px] font-medium"
+      <div class="space-y-2">
+        <div class="flex gap-2 items-center">
+          <select id="person-select" class="flex-1 p-2 border rounded-lg min-h-[44px]">
+            <option value="">Select person to add...</option>
+            ${availablePeople && availablePeople.length > 0 ? availablePeople.filter(p => !currentPeople.find(cp => cp.id === p.id)).map(p => `
+              <option value="${p.id}">${escapeHtml(p.name)}</option>
+            `).join('') : '<option value="" disabled>No people available</option>'}
+          </select>
+          <button id="btn-add-person" 
+                  onclick="addPersonTag()" 
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg min-h-[44px] min-w-[80px] font-medium"
+                  type="button">
+            Add
+          </button>
+        </div>
+        <button id="btn-create-person" 
+                onclick="showCreatePersonModal()" 
+                class="w-full px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg min-h-[44px] font-medium text-sm"
                 type="button">
-          Add
+          <i class="fa-solid fa-plus mr-2"></i>Create New Person
         </button>
       </div>
     </div>
@@ -1032,6 +1044,44 @@ function renderMetadataForm(photo) {
                 class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg min-h-[44px] min-w-[80px] font-medium"
                 type="button">
           Add
+        </button>
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-medium text-neutral-900 mb-2">Albums</label>
+      <div id="albums-list" class="flex flex-wrap gap-2 mb-2 min-h-[44px] p-2 border rounded-lg bg-neutral-50">
+        ${currentAlbums.length > 0 ? currentAlbums.map(a => `
+          <span class="inline-flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+            ${escapeHtml(a.name)}
+            <button onclick="removePhotoFromAlbum(${a.id})" 
+                    class="text-purple-600 hover:text-purple-800 min-w-[20px] min-h-[20px] flex items-center justify-center"
+                    type="button">
+              <i class="fa-solid fa-times text-xs"></i>
+            </button>
+          </span>
+        `).join('') : '<span class="text-neutral-500 text-sm">No albums assigned</span>'}
+      </div>
+      <div class="space-y-2">
+        <div class="flex gap-2 items-center">
+          <select id="album-select" class="flex-1 p-2 border rounded-lg min-h-[44px]">
+            <option value="">Select album to add...</option>
+            ${availableAlbums && availableAlbums.length > 0 ? availableAlbums.filter(a => !currentAlbums.find(ca => ca.id === a.id)).map(a => `
+              <option value="${a.id}">${escapeHtml(a.name)}</option>
+            `).join('') : '<option value="" disabled>No albums available</option>'}
+          </select>
+          <button id="btn-add-album" 
+                  onclick="addPhotoToAlbum()" 
+                  class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg min-h-[44px] min-w-[80px] font-medium"
+                  type="button">
+            Add
+          </button>
+        </div>
+        <button id="btn-create-album" 
+                onclick="showCreateAlbumModal()" 
+                class="w-full px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg min-h-[44px] font-medium text-sm"
+                type="button">
+          <i class="fa-solid fa-plus mr-2"></i>Create New Album
         </button>
       </div>
     </div>
@@ -1070,7 +1120,7 @@ window.addPersonTag = async function() {
     if (select) select.value = '';
     // Reload photo metadata to refresh the form
     await loadPhotoMetadata(currentMetadataPhoto.id);
-    await loadPeopleAndTags();
+    await loadPeopleTagsAndAlbums();
     hideLoading();
     showSuccess('Person added successfully');
   } catch (error) {
@@ -1111,7 +1161,7 @@ window.addTagTag = async function() {
     if (input) input.value = '';
     // Reload photo metadata to refresh the form
     await loadPhotoMetadata(currentMetadataPhoto.id);
-    await loadPeopleAndTags();
+    await loadPeopleTagsAndAlbums();
     hideLoading();
     showSuccess('Tag added successfully');
   } catch (error) {
@@ -1128,6 +1178,266 @@ window.removeTagTag = async function(tagId) {
     await loadPhotoMetadata(currentMetadataPhoto.id);
   } catch (error) {
     showError('Failed to remove tag: ' + error.message);
+  }
+};
+
+window.showCreatePersonModal = function() {
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'create-person-modal-overlay';
+  overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+  overlay.onclick = function(e) {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  };
+
+  overlay.innerHTML = `
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-neutral-900">Create New Person</h3>
+        <button onclick="document.getElementById('create-person-modal-overlay').remove()" 
+                class="text-neutral-400 hover:text-neutral-600 min-w-[32px] min-h-[32px] flex items-center justify-center">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <form id="create-person-form" onsubmit="event.preventDefault(); createPerson();">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-neutral-900 mb-2">Name *</label>
+            <input type="text" 
+                   id="person-name" 
+                   required
+                   placeholder="Enter person's name"
+                   class="w-full p-3 border rounded-lg min-h-[44px]">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-900 mb-2">Relationship (optional)</label>
+            <input type="text" 
+                   id="person-relationship" 
+                   placeholder="e.g., Mother, Father, Sister"
+                   class="w-full p-3 border rounded-lg min-h-[44px]">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-900 mb-2">Notes (optional)</label>
+            <textarea id="person-notes" 
+                      rows="3"
+                      placeholder="Additional notes..."
+                      class="w-full p-3 border rounded-lg"></textarea>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-6">
+          <button type="button" 
+                  onclick="document.getElementById('create-person-modal-overlay').remove()"
+                  class="flex-1 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-lg min-h-[44px] font-medium">
+            Cancel
+          </button>
+          <button type="submit" 
+                  class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg min-h-[44px] font-medium">
+            Create Person
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  // Focus on name input
+  setTimeout(() => {
+    const nameInput = document.getElementById('person-name');
+    if (nameInput) nameInput.focus();
+  }, 100);
+};
+
+window.createPerson = async function() {
+  const nameInput = document.getElementById('person-name');
+  const relationshipInput = document.getElementById('person-relationship');
+  const notesInput = document.getElementById('person-notes');
+
+  const name = nameInput?.value?.trim();
+  if (!name) {
+    showError('Person name is required');
+    return;
+  }
+
+  if (!currentLibrary) {
+    showError('Library not loaded');
+    return;
+  }
+
+  try {
+    showLoading('Creating person...');
+    const data = {
+      name: name,
+      relationship_label: relationshipInput?.value?.trim() || null,
+      notes: notesInput?.value?.trim() || null,
+    };
+    
+    await API.createPerson(currentLibrary.id, data);
+    
+    // Close modal
+    const overlay = document.getElementById('create-person-modal-overlay');
+    if (overlay) overlay.remove();
+    
+    // Reload people list and refresh metadata form
+    await loadPeopleTagsAndAlbums();
+    if (currentMetadataPhoto) {
+      await loadPhotoMetadata(currentMetadataPhoto.id);
+    }
+    
+    hideLoading();
+    showSuccess('Person created successfully');
+  } catch (error) {
+    hideLoading();
+    showError('Failed to create person: ' + error.message);
+  }
+};
+
+window.addPhotoToAlbum = async function() {
+  const select = document.getElementById('album-select');
+  const albumId = select?.value;
+  
+  if (!albumId) {
+    showError('Please select an album to add');
+    return;
+  }
+  
+  if (!currentMetadataPhoto) {
+    showError('Photo not loaded');
+    return;
+  }
+
+  try {
+    showLoading('Adding to album...');
+    await API.addPhotoToAlbum(currentMetadataPhoto.id, parseInt(albumId));
+    // Reset select
+    if (select) select.value = '';
+    // Reload photo metadata to refresh the form
+    await loadPhotoMetadata(currentMetadataPhoto.id);
+    await loadPeopleTagsAndAlbums();
+    hideLoading();
+    showSuccess('Photo added to album successfully');
+  } catch (error) {
+    hideLoading();
+    showError('Failed to add photo to album: ' + error.message);
+  }
+};
+
+window.removePhotoFromAlbum = async function(albumId) {
+  if (!currentMetadataPhoto) return;
+
+  try {
+    showLoading('Removing from album...');
+    await API.removePhotoFromAlbum(currentMetadataPhoto.id, albumId);
+    await loadPhotoMetadata(currentMetadataPhoto.id);
+    hideLoading();
+    showSuccess('Photo removed from album');
+  } catch (error) {
+    hideLoading();
+    showError('Failed to remove photo from album: ' + error.message);
+  }
+};
+
+window.showCreateAlbumModal = function() {
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'create-album-modal-overlay';
+  overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+  overlay.onclick = function(e) {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  };
+
+  overlay.innerHTML = `
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-neutral-900">Create New Album</h3>
+        <button onclick="document.getElementById('create-album-modal-overlay').remove()" 
+                class="text-neutral-400 hover:text-neutral-600 min-w-[32px] min-h-[32px] flex items-center justify-center">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <form id="create-album-form" onsubmit="event.preventDefault(); createAlbum();">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-neutral-900 mb-2">Album Name *</label>
+            <input type="text" 
+                   id="album-name" 
+                   required
+                   placeholder="Enter album name"
+                   class="w-full p-3 border rounded-lg min-h-[44px]">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-900 mb-2">Description (optional)</label>
+            <textarea id="album-description" 
+                      rows="3"
+                      placeholder="Album description..."
+                      class="w-full p-3 border rounded-lg"></textarea>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-6">
+          <button type="button" 
+                  onclick="document.getElementById('create-album-modal-overlay').remove()"
+                  class="flex-1 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-lg min-h-[44px] font-medium">
+            Cancel
+          </button>
+          <button type="submit" 
+                  class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg min-h-[44px] font-medium">
+            Create Album
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  // Focus on name input
+  setTimeout(() => {
+    const nameInput = document.getElementById('album-name');
+    if (nameInput) nameInput.focus();
+  }, 100);
+};
+
+window.createAlbum = async function() {
+  const nameInput = document.getElementById('album-name');
+  const descriptionInput = document.getElementById('album-description');
+
+  const name = nameInput?.value?.trim();
+  if (!name) {
+    showError('Album name is required');
+    return;
+  }
+
+  if (!currentLibrary) {
+    showError('Library not loaded');
+    return;
+  }
+
+  try {
+    showLoading('Creating album...');
+    const data = {
+      name: name,
+      description: descriptionInput?.value?.trim() || null,
+    };
+    
+    await API.createAlbum(currentLibrary.id, data);
+    
+    // Close modal
+    const overlay = document.getElementById('create-album-modal-overlay');
+    if (overlay) overlay.remove();
+    
+    // Reload albums list and refresh metadata form
+    await loadPeopleTagsAndAlbums();
+    if (currentMetadataPhoto) {
+      await loadPhotoMetadata(currentMetadataPhoto.id);
+    }
+    
+    hideLoading();
+    showSuccess('Album created successfully');
+  } catch (error) {
+    hideLoading();
+    showError('Failed to create album: ' + error.message);
   }
 };
 
