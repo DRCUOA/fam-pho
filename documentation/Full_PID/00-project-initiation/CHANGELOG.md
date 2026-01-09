@@ -1,5 +1,79 @@
 # Changelog
 
+## [2026-01-09] - Documentation: Add Route Testing Manual
+
+### Summary
+Created comprehensive route testing manual with curl commands for all API endpoints using seed data credentials.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.4",
+  "type": "documentation",
+  "category": "testing",
+  "changes": [
+    {
+      "component": "route-testing-manual.md",
+      "action": "create",
+      "changes": [
+        "Created comprehensive route testing manual",
+        "Includes curl commands for all API endpoints",
+        "Organized by route category (auth, photos, search, workflow, etc.)",
+        "Includes seed data credentials and test workflow",
+        "Provides troubleshooting section",
+        "Documents session cookie usage",
+        "Includes role-based access examples"
+      ],
+      "sections": [
+        "Health check routes",
+        "Authentication routes",
+        "Photo upload routes",
+        "Photo management routes",
+        "Search routes",
+        "Workflow routes",
+        "People management routes",
+        "Tags management routes",
+        "Albums management routes",
+        "File serving routes",
+        "Complete testing workflow example"
+      ]
+    }
+  ],
+  "benefits": [
+    "Enables manual API testing without frontend",
+    "Provides reference for API usage",
+    "Documents all available endpoints",
+    "Includes seed data credentials for testing",
+    "Shows complete workflow examples"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **route-testing-manual.md** | Create | Comprehensive curl-based route testing manual with all endpoints |
+
+### Benefits
+
+- ✅ Enables manual API testing without frontend
+- ✅ Provides reference documentation for all API endpoints
+- ✅ Includes seed data credentials and test IDs
+- ✅ Shows complete testing workflow examples
+- ✅ Documents session cookie management
+- ✅ Includes troubleshooting guidance
+
+### Files Created
+
+- `route-testing-manual.md`
+
+---
+
 ## [2026-01-09] - Feature: Add Root-Level Health Check Endpoint
 
 ### Summary
