@@ -127,15 +127,17 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Serve static files in production
-if (config.env === 'production') {
-  app.use(express.static(path.join(__dirname, '../client')));
-  
-  // Serve index.html for SPA routes
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/index.html'));
-  });
-}
+// Serve static files (client application)
+app.use(express.static(path.join(__dirname, '../client')));
+
+// Serve index.html for SPA routes (catch-all for client-side routing)
+app.get('*', (req, res, next) => {
+  // Skip API routes and health check
+  if (req.path.startsWith('/api') || req.path === '/health') {
+    return next();
+  }
+  res.sendFile(path.join(__dirname, '../client/index.html'));
+});
 
 // 404 handler
 app.use(notFoundHandler);

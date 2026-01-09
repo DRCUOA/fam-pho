@@ -1,5 +1,73 @@
 # Changelog
 
+## [2026-01-09] - Bug Fix: Static File Serving in Development Mode
+
+### Summary
+Fixed critical bug preventing frontend from loading in development mode. Static file serving was conditionally wrapped in production-only check, and catch-all route was interfering with API endpoints.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.6",
+  "type": "bugfix",
+  "category": "server",
+  "changes": [
+    {
+      "component": "server/index.js",
+      "action": "fix",
+      "changes": [
+        "Removed conditional check for static file serving (was only enabled in production)",
+        "Static files now served unconditionally in all environments",
+        "Updated catch-all route to skip API routes and health check endpoint",
+        "Added explicit check: if (req.path.startsWith('/api') || req.path === '/health') return next()",
+        "Ensures API routes are handled by backend before serving index.html"
+      ],
+      "lines_modified": "130-138, catch-all route handler",
+      "issue": "Frontend index.html not served in development, causing 'Route not found' error",
+      "root_cause": "Static file middleware wrapped in if (config.env === 'production') condition"
+    }
+  ],
+  "benefits": [
+    "Frontend now loads correctly in development mode",
+    "API routes properly handled before SPA catch-all",
+    "Health check endpoint accessible without interference",
+    "Consistent behavior across development and production environments"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **server/index.js** | Fix | Removed production-only static file serving, fixed catch-all route to skip API/health endpoints |
+
+### Benefits
+
+- ✅ Frontend loads correctly in development mode (no more "Route not found" error)
+- ✅ API routes properly handled before SPA catch-all route
+- ✅ Health check endpoint (`/health`) accessible without interference
+- ✅ Consistent static file serving behavior across all environments
+- ✅ Proper separation of concerns: API routes vs. frontend routes
+
+### Files Modified
+
+- `server/index.js`
+
+### Testing Recommendations
+
+- Verify frontend loads at `http://localhost:3000` in development mode
+- Test API routes are accessible (e.g., `/api/photos`)
+- Verify health check endpoint works (`/health`)
+- Test SPA client-side routing (navigate between views)
+- Verify static assets (CSS, JS, images) are served correctly
+
+---
+
 ## [2026-01-09] - Feature: Complete Core Workflow Frontend Implementation
 
 ### Summary
