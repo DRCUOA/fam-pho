@@ -7,12 +7,12 @@ export function renderLogin() {
         <h1 class="text-3xl font-bold text-center mb-8">Family Photo Archive</h1>
         <form id="login-form" class="bg-white rounded-lg shadow p-6">
           <div class="mb-4">
-            <label class="block text-sm font-medium mb-2">Email</label>
+            <label class="block text-sm font-medium text-neutral-900 mb-2">Email</label>
             <input type="email" id="email" required 
                    class="w-full p-2 border rounded">
           </div>
           <div class="mb-6">
-            <label class="block text-sm font-medium mb-2">Password</label>
+            <label class="block text-sm font-medium text-neutral-900 mb-2">Password</label>
             <input type="password" id="password" required 
                    class="w-full p-2 border rounded">
           </div>
@@ -87,10 +87,10 @@ export function renderDashboard(user, library) {
               <i class="fa-solid fa-list-check text-xl mr-3 text-neutral-600"></i>
               <div class="text-left flex-1">
                 <div class="text-base text-neutral-900 font-medium">Review Queue</div>
-                <div class="text-sm text-neutral-500"><span id="triage-count">0</span> photos waiting</div>
+                <div class="text-sm text-neutral-600"><span id="triage-count">0</span> photos waiting</div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+            <i class="fa-solid fa-chevron-right text-neutral-500"></i>
           </button>
           <button id="btn-metadata" 
                   class="w-full bg-white hover:bg-neutral-50 border border-neutral-200 rounded-lg p-4 flex items-center justify-between min-h-[60px] transition-colors">
@@ -98,10 +98,10 @@ export function renderDashboard(user, library) {
               <i class="fa-solid fa-tags text-xl mr-3 text-neutral-600"></i>
               <div class="text-left flex-1">
                 <div class="text-base text-neutral-900 font-medium">Metadata Entry</div>
-                <div class="text-sm text-neutral-500"><span id="metadata-count">0</span> photos waiting</div>
+                <div class="text-sm text-neutral-600"><span id="metadata-count">0</span> photos waiting</div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+            <i class="fa-solid fa-chevron-right text-neutral-500"></i>
           </button>
           <button id="btn-search" 
                   class="w-full bg-white hover:bg-neutral-50 border border-neutral-200 rounded-lg p-4 flex items-center justify-between min-h-[60px] transition-colors">
@@ -109,7 +109,7 @@ export function renderDashboard(user, library) {
               <i class="fa-solid fa-magnifying-glass text-xl mr-3 text-neutral-600"></i>
               <span class="text-base text-neutral-900 font-medium">Search Archive</span>
             </div>
-            <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+            <i class="fa-solid fa-chevron-right text-neutral-500"></i>
           </button>
         </div>
       </section>
@@ -131,9 +131,9 @@ export function renderUpload(library) {
     <main class="px-4 py-6 pb-20">
       <div id="upload-zone" 
            class="upload-zone rounded-lg p-8 md:p-12 text-center cursor-pointer mb-4 transition-all">
-        <i class="fa-solid fa-cloud-arrow-up text-4xl md:text-5xl text-neutral-400 mb-4"></i>
-        <p class="text-neutral-600 mb-2 text-base md:text-lg">Drag and drop photos here</p>
-        <p class="text-sm text-neutral-500 mb-4">or</p>
+        <i class="fa-solid fa-cloud-arrow-up text-4xl md:text-5xl text-neutral-600 mb-4"></i>
+        <p class="text-neutral-700 mb-2 text-base md:text-lg">Drag and drop photos here</p>
+        <p class="text-sm text-neutral-600 mb-4">or</p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
           <button id="btn-upload-files" 
                   class="bg-neutral-900 text-white px-6 py-3 rounded-lg min-h-[44px] min-w-[140px] font-medium">
@@ -291,7 +291,7 @@ export function renderSearch(library) {
       <div id="search-results" class="photo-grid"></div>
       
       <div id="search-empty" class="hidden text-center py-12">
-        <i class="fa-solid fa-search text-5xl text-neutral-300 mb-4"></i>
+        <i class="fa-solid fa-search text-5xl text-neutral-400 mb-4"></i>
         <p class="text-lg text-neutral-900 mb-2">No photos found</p>
         <p class="text-neutral-600">Try adjusting your search or filters.</p>
       </div>

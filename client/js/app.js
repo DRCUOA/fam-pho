@@ -346,10 +346,10 @@ function renderNextTasks(queues) {
           </div>
           <div class="text-left flex-1">
             <div class="text-base text-neutral-900 font-medium">${escapeHtml(task.title)}</div>
-            <div class="text-sm text-neutral-500">${task.count} photo${task.count !== 1 ? 's' : ''} waiting</div>
+            <div class="text-sm text-neutral-600">${task.count} photo${task.count !== 1 ? 's' : ''} waiting</div>
           </div>
         </div>
-        <i class="fa-solid fa-chevron-right text-neutral-400"></i>
+        <i class="fa-solid fa-chevron-right text-neutral-500"></i>
       </button>
     `;
   }).join('');
@@ -464,7 +464,7 @@ function renderFilePreviews() {
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-neutral-900 truncate">${escapeHtml(file.name)}</p>
-          <p class="text-xs text-neutral-500">${formatFileSize(file.size)}</p>
+          <p class="text-xs text-neutral-600">${formatFileSize(file.size)}</p>
         </div>
         <button onclick="removeFile(${index})" 
                 class="p-2 text-red-600 hover:bg-red-50 rounded min-w-[44px] min-h-[44px] flex items-center justify-center">
@@ -707,9 +707,9 @@ function renderTriagePhoto() {
     </div>
     
     <div class="mb-4 bg-white rounded-lg p-3 border border-neutral-200">
-      <p class="text-xs text-neutral-500 mb-1">Filename</p>
+      <p class="text-xs text-neutral-600 mb-1">Filename</p>
       <p class="text-sm text-neutral-900 font-medium truncate">${escapeHtml(fileName)}</p>
-      <p class="text-xs text-neutral-500 mt-2">Uploaded: ${uploadDate}</p>
+      <p class="text-xs text-neutral-600 mt-2">Uploaded: ${uploadDate}</p>
     </div>
     
     <div class="mb-6 bg-neutral-100 rounded-lg overflow-hidden">
@@ -753,7 +753,7 @@ function renderTriagePhoto() {
       </button>
     </div>
     
-    <div class="mt-4 text-xs text-neutral-500 text-center">
+    <div class="mt-4 text-xs text-neutral-600 text-center">
       <p>Keyboard shortcuts: ← → to navigate, K to keep, D to discard, U for duplicate</p>
     </div>
   `;
@@ -931,12 +931,12 @@ function renderMetadataForm(photo) {
     if (exifFields.length > 0) {
       exifDiv.innerHTML = exifFields.map(f => `
         <div class="flex justify-between">
-          <span class="text-neutral-500">${f.label}:</span>
+          <span class="text-neutral-600">${f.label}:</span>
           <span class="text-neutral-900 font-medium">${escapeHtml(String(f.value))}</span>
         </div>
       `).join('');
     } else {
-      exifDiv.innerHTML = '<p class="text-neutral-500">No EXIF data available</p>';
+      exifDiv.innerHTML = '<p class="text-neutral-600">No EXIF data available</p>';
     }
   }
 
@@ -1297,13 +1297,13 @@ function renderSearchResults(photos, pagination) {
                  loading="lazy"
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'200\\' height=\\'200\\'%3E%3Crect fill=\\'%23e5e5e5\\' width=\\'200\\' height=\\'200\\'/%3E%3Ctext fill=\\'%23999\\' font-family=\\'sans-serif\\' font-size=\\'14\\' x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\'%3ENo Image%3C/text%3E%3C/svg%3E'">
           ` : `
-            <div class="w-full h-full flex items-center justify-center text-neutral-400">
+            <div class="w-full h-full flex items-center justify-center text-neutral-500">
               <i class="fa-solid fa-image text-4xl"></i>
             </div>
           `}
         </div>
         <div class="p-3">
-          <p class="text-xs text-neutral-500 truncate mb-1">${escapeHtml(filename)}</p>
+          <p class="text-xs text-neutral-600 truncate mb-1">${escapeHtml(filename)}</p>
           <p class="text-sm text-neutral-700 font-medium">${dateStr}</p>
         </div>
       </div>
