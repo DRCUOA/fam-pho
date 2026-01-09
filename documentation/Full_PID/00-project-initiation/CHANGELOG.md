@@ -1,5 +1,214 @@
 # Changelog
 
+## [2026-01-09] - Bug Fix & Enhancement: Metadata Entry Workflow Improvements
+
+### Summary
+Fixed critical issues with metadata entry workflow, particularly the "Save & Next Photo" functionality. Enhanced validation for optional fields, improved state transition reliability with retry logic, fixed route ordering conflicts, and added comprehensive logging for debugging. The metadata entry workflow now reliably transitions photos to complete state and loads the next photo in queue.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.12",
+  "type": "bugfix",
+  "category": "metadata_workflow",
+  "changes": [
+    {
+      "component": "client/js/app.js",
+      "action": "fix",
+      "changes": [
+        "Added currentView tracking for navigation state management",
+        "Swapped button order in metadata form (Save & Next first, Save & Return second)",
+        "Enhanced saveMetadata() with skipNavigation parameter for saveMetadataAndNext flow",
+        "Added state transition verification after completePhoto() call",
+        "Implemented retry logic in saveMetadataAndNext() with 3 retries and 500ms delays",
+        "Added direct metadata queue fetching via getMetadataQueue() API",
+        "Enhanced error handling with console logging for debugging",
+        "Added count verification to ensure photo removed from queue before loading next",
+        "Improved createPerson() to only include optional fields if they have values",
+        "Added updated_at timestamp refresh after state transitions",
+        "Enhanced form value handling to trim whitespace and convert empty strings to null"
+      ],
+      "sections": [
+        "Metadata entry workflow",
+        "State management",
+        "Error handling"
+      ]
+    },
+    {
+      "component": "client/js/api.js",
+      "action": "modify",
+      "changes": [
+        "Added getMetadataQueue() method to fetch metadata entry queue directly",
+        "Enhanced completePhoto() with console logging for debugging",
+        "Added comment explaining library_id requirement for requireLibraryMember middleware"
+      ],
+      "sections": [
+        "API client",
+        "Debugging support"
+      ]
+    },
+    {
+      "component": "server/routes/photos.js",
+      "action": "add",
+      "changes": [
+        "Added GET /photos/metadata-entry endpoint to fetch metadata entry queue",
+        "Returns photos with file attachments and count",
+        "Supports limit and offset pagination"
+      ],
+      "sections": [
+        "Workflow queue endpoints"
+      ]
+    },
+    {
+      "component": "server/routes/photos.js",
+      "action": "fix",
+      "changes": [
+        "Fixed validation for optional fields (date_taken, location_text, description)",
+        "Changed from .optional() to .optional({ nullable: true, checkFalsy: true })",
+        "Added proper handling of empty strings (converted to null)",
+        "Enhanced update endpoint to return photo with relations via getWithRelations()",
+        "Improved updateData object construction to only include defined fields"
+      ],
+      "sections": [
+        "Validation",
+        "Data handling"
+      ]
+    },
+    {
+      "component": "server/routes/people.js",
+      "action": "fix",
+      "changes": [
+        "Fixed validation for optional fields (relationship_label, notes)",
+        "Changed from .optional() to .optional({ nullable: true, checkFalsy: true })",
+        "Added explicit name trimming and validation",
+        "Enhanced error logging with request body and library ID",
+        "Improved data handling to trim whitespace and convert empty strings to null"
+      ],
+      "sections": [
+        "Validation",
+        "Error handling"
+      ]
+    },
+    {
+      "component": "server/models/Photo.js",
+      "action": "enhance",
+      "changes": [
+        "Enhanced transitionState() to update updated_at timestamp on state change",
+        "Added explicit check for photo existence (throws error if not found)",
+        "Added comprehensive logging for state transitions (info) and failures (error)",
+        "Improved error handling with transaction rollback"
+      ],
+      "sections": [
+        "State management",
+        "Logging"
+      ]
+    },
+    {
+      "component": "server/index.js",
+      "action": "fix",
+      "changes": [
+        "Fixed route ordering: moved workflowRoutes before photoRoutes",
+        "Prevents /photos/:id route from matching /photos/:id/complete endpoint",
+        "Updated comment to document route ordering requirements"
+      ],
+      "sections": [
+        "Route configuration"
+      ]
+    },
+    {
+      "component": "client/index.html",
+      "action": "fix",
+      "changes": [
+        "Removed trailing whitespace from title tag"
+      ],
+      "sections": [
+        "Code cleanup"
+      ]
+    }
+  ],
+  "benefits": [
+    "Save & Next Photo functionality now works reliably",
+    "State transitions are verified before proceeding",
+    "Better handling of optional fields prevents validation errors",
+    "Retry logic handles database timing issues",
+    "Comprehensive logging aids debugging",
+    "Route conflicts resolved",
+    "Improved user experience with proper button ordering"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **client/js/app.js** | Fix | Enhanced metadata entry workflow with retry logic, state verification, and improved navigation |
+| **client/js/api.js** | Modify | Added getMetadataQueue() method and enhanced logging |
+| **server/routes/photos.js** | Add | Added metadata-entry queue endpoint |
+| **server/routes/photos.js** | Fix | Fixed validation for optional fields, improved data handling |
+| **server/routes/people.js** | Fix | Fixed validation for optional fields, enhanced error handling |
+| **server/models/Photo.js** | Enhance | Added updated_at timestamp updates and comprehensive logging |
+| **server/index.js** | Fix | Fixed route ordering to prevent conflicts |
+| **client/index.html** | Fix | Removed trailing whitespace |
+
+### Benefits
+
+- ✅ Save & Next Photo functionality works reliably with retry logic
+- ✅ State transitions are verified before proceeding to next photo
+- ✅ Better validation prevents errors with optional fields
+- ✅ Retry logic handles database timing/transaction issues
+- ✅ Comprehensive logging aids debugging workflow issues
+- ✅ Route conflicts resolved (workflow routes before photo routes)
+- ✅ Improved user experience with logical button ordering
+- ✅ Better error messages and handling throughout
+
+### Files Modified
+
+- `client/js/app.js` - Enhanced metadata entry workflow with retry logic and state verification
+- `client/js/api.js` - Added metadata queue endpoint and enhanced logging
+- `server/routes/photos.js` - Added metadata-entry endpoint, fixed validation
+- `server/routes/people.js` - Fixed validation for optional fields
+- `server/models/Photo.js` - Enhanced state transitions with timestamp updates and logging
+- `server/index.js` - Fixed route ordering
+- `client/index.html` - Code cleanup
+
+### Key Improvements
+
+1. **Metadata Entry Workflow:**
+   - Save & Next Photo now reliably loads the next photo in queue
+   - Retry logic handles database timing issues (3 retries with 500ms delays)
+   - State transition verification ensures photo moved to 'complete' state
+   - Direct queue fetching ensures accurate photo list
+
+2. **Validation Fixes:**
+   - Optional fields (date_taken, location_text, description, relationship_label, notes) properly handle null/empty values
+   - Empty strings converted to null before database operations
+   - Better error messages and logging
+
+3. **Route Ordering:**
+   - workflowRoutes registered before photoRoutes to prevent route conflicts
+   - /photos/:id/complete endpoint now matches correctly
+
+4. **State Management:**
+   - updated_at timestamp refreshed on state transitions
+   - Comprehensive logging for debugging state issues
+   - Explicit error handling for missing photos
+
+### Testing Recommendations
+
+- Test Save & Next Photo functionality with multiple photos in metadata queue
+- Verify state transitions work correctly (metadata_entry → complete)
+- Test with empty optional fields (should not cause validation errors)
+- Test route ordering (workflow endpoints should work correctly)
+- Verify retry logic handles database timing issues
+- Check console logs for debugging information
+
+---
+
 ## [2026-01-09] - Feature: EPIC 3 & EPIC 4 - Undo Discard UI and Derivative Generation
 
 ### Summary

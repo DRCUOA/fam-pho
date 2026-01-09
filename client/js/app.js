@@ -5,6 +5,7 @@ import { renderLogin, renderDashboard, renderUpload, renderTriage, renderMetadat
 
 let currentUser = null;
 let currentLibrary = null;
+let currentView = null;
 
 // Utility functions for notifications and loading states
 function showLoading(message = 'Loading...') {
@@ -110,26 +111,31 @@ function showLogin() {
 }
 
 function showDashboard() {
+  currentView = 'dashboard';
   document.getElementById('app').innerHTML = renderDashboard(currentUser, currentLibrary);
   setupDashboardHandlers();
 }
 
 function showUpload() {
+  currentView = 'upload';
   document.getElementById('app').innerHTML = renderUpload(currentLibrary);
   setupUploadHandlers();
 }
 
 function showTriage() {
+  currentView = 'triage';
   document.getElementById('app').innerHTML = renderTriage(currentLibrary);
   setupTriageHandlers();
 }
 
 function showMetadata(photoId) {
+  currentView = 'metadata';
   document.getElementById('app').innerHTML = renderMetadata(photoId, currentLibrary);
   setupMetadataHandlers(photoId);
 }
 
 function showSearch() {
+  currentView = 'search';
   document.getElementById('app').innerHTML = renderSearch(currentLibrary);
   setupSearchHandlers();
 }
@@ -1100,13 +1106,13 @@ function renderMetadataForm(photo) {
     </div>
     
     <div class="pt-4 border-t border-neutral-200">
-      <button onclick="saveMetadata(${photo.id})" 
-              class="w-full bg-neutral-900 hover:bg-neutral-800 text-white py-3 rounded-lg font-medium min-h-[44px] mb-2">
-        <i class="fa-solid fa-save mr-2"></i>Save & Continue
-      </button>
       <button onclick="saveMetadataAndNext(${photo.id})" 
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium min-h-[44px]">
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium min-h-[44px] mb-2">
         <i class="fa-solid fa-forward mr-2"></i>Save & Next Photo
+      </button>
+      <button onclick="saveMetadata(${photo.id})" 
+              class="w-full bg-neutral-900 hover:bg-neutral-800 text-white py-3 rounded-lg font-medium min-h-[44px]">
+        <i class="fa-solid fa-save mr-2"></i>Save & Return
       </button>
     </div>
   `;
@@ -1282,9 +1288,18 @@ window.createPerson = async function() {
     showLoading('Creating person...');
     const data = {
       name: name,
-      relationship_label: relationshipInput?.value?.trim() || null,
-      notes: notesInput?.value?.trim() || null,
     };
+    
+    // Only include optional fields if they have values
+    const relationshipValue = relationshipInput?.value?.trim();
+    if (relationshipValue) {
+      data.relationship_label = relationshipValue;
+    }
+    
+    const notesValue = notesInput?.value?.trim();
+    if (notesValue) {
+      data.notes = notesValue;
+    }
     
     await API.createPerson(currentLibrary.id, data);
     
@@ -1476,50 +1491,163 @@ window.rotatePhoto = async function(degrees) {
   }
 };
 
-window.saveMetadata = async function(photoId) {
+window.saveMetadata = async function(photoId, skipNavigation = false) {
   try {
+    console.log('saveMetadata: Starting for photo', photoId, 'skipNavigation:', skipNavigation);
     showLoading('Saving...');
+    
+    // Get form values, converting empty strings to null
+    const dateTakenEl = document.getElementById('date-taken');
+    const locationEl = document.getElementById('location');
+    const descriptionEl = document.getElementById('description');
+    
     const data = {
-      date_taken: document.getElementById('date-taken').value || null,
-      location_text: document.getElementById('location').value || null,
-      description: document.getElementById('description').value || null,
+      date_taken: dateTakenEl?.value?.trim() || null,
+      location_text: locationEl?.value?.trim() || null,
+      description: descriptionEl?.value?.trim() || null,
     };
-    await API.updatePhoto(photoId, data);
-    await API.completePhoto(photoId);
+    
+    console.log('saveMetadata: Updating photo with data:', data);
+    
+    // Update photo metadata
+    const updateResult = await API.updatePhoto(photoId, data);
+    console.log('saveMetadata: Photo updated:', updateResult.photo?.id, 'state:', updateResult.photo?.current_state);
+    
+    // Complete the photo (transition to 'complete' state)
+    console.log('saveMetadata: Completing photo...');
+    const completeResult = await API.completePhoto(photoId);
+    console.log('saveMetadata: Photo completed:', completeResult.photo?.id, 'state:', completeResult.photo?.current_state);
+    
+    // Verify the state transition worked
+    if (completeResult.photo?.current_state !== 'complete') {
+      console.error('saveMetadata: State transition failed! Expected: complete, Got:', completeResult.photo?.current_state);
+      throw new Error(`State transition failed. Photo is in state: ${completeResult.photo?.current_state}`);
+    }
+    
+    console.log('saveMetadata: State transition successful!');
+    
+    // Update currentMetadataPhoto with the updated data
+    if (currentMetadataPhoto && currentMetadataPhoto.id === photoId) {
+      currentMetadataPhoto = { ...currentMetadataPhoto, ...updateResult.photo };
+    }
+    
     hideLoading();
     showSuccess('Metadata saved successfully');
     
-    // Return to previous view
-    setTimeout(() => {
-      if (triagePhotos.length > 0) {
-        showTriage();
-      } else {
-        showDashboard();
+    // Refresh counts after completion (for both buttons)
+    try {
+      const tasks = await API.getNextTasks(currentLibrary.id);
+      console.log('saveMetadata: Refreshed counts - metadata_entry:', tasks.queues.metadata_entry?.count);
+      // Update counts if we're on dashboard or about to navigate there
+      if (!skipNavigation || currentView === 'dashboard') {
+        updateTaskCounts(tasks.queues);
+        updateWorkflowStatus(tasks.queues);
       }
-    }, 1000);
+    } catch (e) {
+      console.error('Failed to refresh counts:', e);
+    }
+    
+    // Return to previous view only if not skipping navigation (for saveMetadataAndNext)
+    if (!skipNavigation) {
+      console.log('saveMetadata: Navigating away...');
+      setTimeout(() => {
+        if (triagePhotos.length > 0) {
+          showTriage();
+        } else {
+          showDashboard();
+        }
+      }, 1000);
+    } else {
+      console.log('saveMetadata: Skipping navigation (saveMetadataAndNext will handle it)');
+    }
   } catch (error) {
+    console.error('saveMetadata: Error occurred:', error);
     hideLoading();
     showError('Failed to save: ' + error.message);
+    throw error; // Re-throw so saveMetadataAndNext can handle it
   }
 };
 
 window.saveMetadataAndNext = async function(photoId) {
   try {
-    await saveMetadata(photoId);
-    // After saving, try to load next photo in metadata_entry state
-    try {
-      const tasks = await API.getNextTasks(currentLibrary.id);
-      if (tasks.queues.metadata_entry && tasks.queues.metadata_entry.photos && tasks.queues.metadata_entry.photos.length > 0) {
-        const nextPhoto = tasks.queues.metadata_entry.photos[0];
-        showMetadata(nextPhoto.id);
-      } else {
-        showDashboard();
+    console.log('saveMetadataAndNext: Starting for photo', photoId);
+    
+    // Save metadata but skip navigation
+    await saveMetadata(photoId, true);
+    console.log('saveMetadataAndNext: Metadata saved and photo completed');
+    
+    // Wait longer for the database transaction to complete
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Fetch the metadata queue directly to get accurate count and next photo
+    // Retry a few times in case of timing issues
+    let retries = 3;
+    let nextPhotoFound = false;
+    
+    while (retries > 0 && !nextPhotoFound) {
+      try {
+        const metadataQueue = await API.getMetadataQueue(currentLibrary.id, 50, 0);
+        console.log(`saveMetadataAndNext: Attempt ${4 - retries} - Metadata queue count:`, metadataQueue.count, 'photos:', metadataQueue.photos?.length);
+        
+        // Filter out the photo we just completed
+        const availablePhotos = metadataQueue.photos?.filter(p => p.id !== photoId) || [];
+        console.log('saveMetadataAndNext: Available photos after filter:', availablePhotos.length);
+        
+        // Check if the count matches (photo should be removed from queue)
+        if (metadataQueue.count === availablePhotos.length) {
+          // Count matches filtered photos - transition worked!
+          if (availablePhotos.length > 0) {
+            // Load the first available photo (which should be the next one)
+            const nextPhoto = availablePhotos[0];
+            console.log('saveMetadataAndNext: Loading next photo:', nextPhoto.id);
+            showMetadata(nextPhoto.id);
+            nextPhotoFound = true;
+          } else {
+            // No more photos in queue
+            console.log('saveMetadataAndNext: No more photos in queue');
+            showSuccess('All metadata entry complete!');
+            setTimeout(() => {
+              showDashboard();
+            }, 1500);
+            nextPhotoFound = true;
+          }
+        } else {
+          // Count mismatch - photo might still be in queue, wait and retry
+          console.log(`saveMetadataAndNext: Count mismatch (count: ${metadataQueue.count}, filtered: ${availablePhotos.length}). Retrying...`);
+          retries--;
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          } else {
+            // Last retry failed - check if we can still load a photo
+            if (availablePhotos.length > 0) {
+              console.log('saveMetadataAndNext: Loading photo despite count mismatch:', availablePhotos[0].id);
+              showMetadata(availablePhotos[0].id);
+              nextPhotoFound = true;
+            } else {
+              console.log('saveMetadataAndNext: No photos found after all retries');
+              showSuccess('All metadata entry complete!');
+              setTimeout(() => {
+                showDashboard();
+              }, 1500);
+              nextPhotoFound = true;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load next task:', e);
+        retries--;
+        if (retries === 0) {
+          // Fallback to dashboard
+          showDashboard();
+          nextPhotoFound = true;
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
-    } catch (e) {
-      showDashboard();
     }
   } catch (error) {
-    // Error already handled in saveMetadata
+    // Error already handled in saveMetadata, but don't navigate away on error
+    console.error('Save metadata failed:', error);
   }
 };
 

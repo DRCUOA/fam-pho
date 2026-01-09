@@ -146,6 +146,10 @@ class API {
     return this.request(`/photos/triage?library_id=${libraryId}&limit=${limit}&offset=${offset}`);
   }
 
+  static async getMetadataQueue(libraryId, limit = 50, offset = 0) {
+    return this.request(`/photos/metadata-entry?library_id=${libraryId}&limit=${limit}&offset=${offset}`);
+  }
+
   static async getPhoto(id) {
     return this.request(`/photos/${id}`);
   }
@@ -170,7 +174,15 @@ class API {
   }
 
   static async completePhoto(id) {
-    return this.request(`/photos/${id}/complete`, { method: 'POST' });
+    console.log('API.completePhoto: Calling endpoint for photo', id);
+    try {
+      const result = await this.request(`/photos/${id}/complete`, { method: 'POST' });
+      console.log('API.completePhoto: Success:', result);
+      return result;
+    } catch (error) {
+      console.error('API.completePhoto: Error:', error);
+      throw error;
+    }
   }
 
   static async getRejectedQueue(libraryId, limit = 50, offset = 0) {
@@ -202,6 +214,7 @@ class API {
   }
 
   static async createPerson(libraryId, data) {
+    // library_id is needed by requireLibraryMember middleware
     return this.request('/people', {
       method: 'POST',
       body: { library_id: libraryId, ...data },

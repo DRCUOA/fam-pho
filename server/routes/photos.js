@@ -53,6 +53,41 @@ router.get('/photos/triage', requireAuth, requireLibraryMember, async (req, res)
   }
 });
 
+// Get metadata entry queue
+router.get('/photos/metadata-entry', requireAuth, requireLibraryMember, async (req, res) => {
+  try {
+    const libraryId = req.libraryId;
+    const limit = parseInt(req.query.limit || '50');
+    const offset = parseInt(req.query.offset || '0');
+
+    const photos = await Photo.findByLibrary(libraryId, {
+      state: 'metadata_entry',
+      excludeRejected: true,
+      excludeDeleted: true,
+      limit,
+      offset,
+    });
+
+    // Attach file info
+    const photosWithFiles = await Promise.all(
+      photos.map(async (photo) => {
+        const files = await PhotoFile.findByPhotoId(photo.id);
+        return {
+          ...photo,
+          files,
+        };
+      })
+    );
+
+    const count = await Photo.countByState(libraryId, 'metadata_entry');
+
+    res.json({ photos: photosWithFiles, count });
+  } catch (error) {
+    logger.error('Get metadata entry queue error:', error);
+    res.status(500).json({ error: 'Failed to fetch metadata entry queue' });
+  }
+});
+
 // Get photo by ID
 router.get('/photos/:id', requireAuth, requirePhotoAccess, async (req, res) => {
   try {
@@ -66,9 +101,9 @@ router.get('/photos/:id', requireAuth, requirePhotoAccess, async (req, res) => {
 
 // Update photo metadata
 router.put('/photos/:id', requireAuth, requirePhotoAccess, requireRole('contributor'), [
-  body('date_taken').optional().isISO8601(),
-  body('location_text').optional().isString().trim(),
-  body('description').optional().isString().trim(),
+  body('date_taken').optional({ nullable: true, checkFalsy: true }).isISO8601().toDate(),
+  body('location_text').optional({ nullable: true, checkFalsy: true }).isString().trim(),
+  body('description').optional({ nullable: true, checkFalsy: true }).isString().trim(),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -77,11 +112,17 @@ router.put('/photos/:id', requireAuth, requirePhotoAccess, requireRole('contribu
     }
 
     const { date_taken, location_text, description } = req.body;
-    const photo = await Photo.update(req.photo.id, {
-      date_taken,
-      location_text,
-      description,
-    });
+    
+    // Convert empty strings to null and build update object
+    const updateData = {};
+    if (date_taken !== undefined) updateData.date_taken = date_taken || null;
+    if (location_text !== undefined) updateData.location_text = location_text || null;
+    if (description !== undefined) updateData.description = description || null;
+    
+    const photo = await Photo.update(req.photo.id, updateData);
+    
+    // Return updated photo with relations
+    const updatedPhoto = await Photo.getWithRelations(photo.id);
 
     // Log activity
     await ActivityLog.log('photo.update', {
@@ -89,10 +130,10 @@ router.put('/photos/:id', requireAuth, requirePhotoAccess, requireRole('contribu
       actorUserId: req.user.id,
       entityType: 'photo',
       entityId: photo.id,
-      details: { date_taken, location_text, description },
+      details: updateData,
     });
 
-    res.json({ photo });
+    res.json({ photo: updatedPhoto || photo });
   } catch (error) {
     logger.error('Update photo error:', error);
     res.status(500).json({ error: 'Failed to update photo' });

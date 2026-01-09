@@ -114,21 +114,36 @@ class Photo {
     try {
       await client.query('BEGIN');
 
+      // Insert workflow event
       await client.query(
         `INSERT INTO photo_workflow_events (photo_id, from_state, to_state, actor_user_id, reason)
          VALUES ($1, $2, $3, $4, $5)`,
         [photoId, fromState, toState, actorUserId, reason]
       );
 
+      // Update photo state and updated_at timestamp
       const result = await client.query(
-        'UPDATE photos SET current_state = $1 WHERE id = $2 RETURNING *',
+        `UPDATE photos 
+         SET current_state = $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $2 
+         RETURNING *`,
         [toState, photoId]
       );
 
+      if (result.rows.length === 0) {
+        throw new Error(`Photo ${photoId} not found`);
+      }
+
       await client.query('COMMIT');
+      
+      const logger = require('../utils/logger');
+      logger.info(`Photo ${photoId} state transition: ${fromState} -> ${toState}`);
+      
       return result.rows[0];
     } catch (error) {
       await client.query('ROLLBACK');
+      const logger = require('../utils/logger');
+      logger.error(`State transition failed for photo ${photoId}:`, error);
       throw error;
     } finally {
       client.release();

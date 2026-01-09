@@ -22,21 +22,30 @@ router.get('/people', requireAuth, requireLibraryMember, async (req, res) => {
 
 // Create person
 router.post('/people', requireAuth, requireLibraryMember, requireRole('contributor'), [
-  body('name').notEmpty().trim(),
-  body('relationship_label').optional().isString().trim(),
-  body('notes').optional().isString().trim(),
+  body('name').notEmpty().trim().withMessage('Name is required'),
+  body('relationship_label').optional({ nullable: true, checkFalsy: true }).isString().trim(),
+  body('notes').optional({ nullable: true, checkFalsy: true }).isString().trim(),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      logger.warn('Create person validation errors:', errors.array());
+      logger.warn('Request body:', req.body);
+      logger.warn('Library ID:', req.libraryId);
       return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Ensure name is trimmed
+    const name = req.body.name?.trim();
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required' });
     }
 
     const person = await Person.create({
       library_id: req.libraryId,
-      name: req.body.name,
-      relationship_label: req.body.relationship_label,
-      notes: req.body.notes,
+      name: name,
+      relationship_label: req.body.relationship_label?.trim() || null,
+      notes: req.body.notes?.trim() || null,
     });
 
     await ActivityLog.log('person.create', {

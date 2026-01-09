@@ -1,7 +1,7 @@
 const express = require('express');
 const Photo = require('../models/Photo');
 const { requireAuth } = require('../middleware/auth');
-const { requireLibraryMember, requirePhotoAccess } = require('../middleware/authorization');
+const { requireLibraryMember, requirePhotoAccess, requireRole } = require('../middleware/authorization');
 const logger = require('../utils/logger');
 
 const router = express.Router();
@@ -87,21 +87,26 @@ router.get('/workflow/rejected', requireAuth, requireLibraryMember, async (req, 
 });
 
 // Complete metadata entry (transition to complete)
-router.post('/photos/:id/complete', requireAuth, requireLibraryMember, async (req, res) => {
+router.post('/photos/:id/complete', requireAuth, requirePhotoAccess, requireRole('contributor'), async (req, res) => {
   try {
-    // Check photo access
-    const photo = await Photo.findById(req.params.id);
-    if (!photo || photo.library_id !== req.libraryId) {
-      return res.status(404).json({ error: 'Photo not found' });
-    }
+    const photo = req.photo; // Already validated by requirePhotoAccess
 
     if (photo.current_state !== 'metadata_entry') {
-      return res.status(400).json({ error: 'Photo is not in metadata_entry state' });
+      logger.warn(`Photo ${photo.id} is not in metadata_entry state. Current: ${photo.current_state}`);
+      return res.status(400).json({ error: `Photo is not in metadata_entry state. Current state: ${photo.current_state}` });
     }
 
+    logger.info(`Completing photo ${photo.id}, transitioning from metadata_entry to complete`);
     await Photo.transitionState(photo.id, 'metadata_entry', 'complete', req.user.id, 'Metadata entry completed');
 
+    // Verify the transition worked
     const updatedPhoto = await Photo.findById(photo.id);
+    if (updatedPhoto.current_state !== 'complete') {
+      logger.error(`State transition failed for photo ${photo.id}. Expected: complete, Got: ${updatedPhoto.current_state}`);
+      return res.status(500).json({ error: 'State transition failed' });
+    }
+
+    logger.info(`Photo ${photo.id} successfully transitioned to complete state`);
 
     res.json({ 
       photo: updatedPhoto,
@@ -109,7 +114,7 @@ router.post('/photos/:id/complete', requireAuth, requireLibraryMember, async (re
     });
   } catch (error) {
     logger.error('Complete photo error:', error);
-    res.status(500).json({ error: 'Failed to complete photo' });
+    res.status(500).json({ error: 'Failed to complete photo: ' + error.message });
   }
 });
 
