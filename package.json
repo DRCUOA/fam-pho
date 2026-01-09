@@ -11,7 +11,8 @@
     "seed": "node database/seed.js",
     "backup": "node scripts/backup.js",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:integration": "node tests/integration-test.js"
   },
   "keywords": [
     "photo",

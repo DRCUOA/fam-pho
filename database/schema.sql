@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS photos (
     library_id INTEGER NOT NULL,
     uploaded_by INTEGER NOT NULL,
     upload_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     current_state VARCHAR(50) NOT NULL DEFAULT 'uploaded' 
         CHECK(current_state IN ('uploaded', 'triage', 'metadata_entry', 'complete', 'flagged', 'rejected')),
     date_taken TIMESTAMP,

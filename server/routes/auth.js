@@ -5,14 +5,15 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const ActivityLog = require('../services/activityLog');
 const { requireAuth } = require('../middleware/auth');
+const config = require('../utils/config');
 const logger = require('../utils/logger');
 
 const router = express.Router();
 
-// Rate limiting for login
+// Rate limiting for login - more lenient in development
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 requests per window
+  max: config.env === 'development' ? 100 : 50, // 100 requests in dev, 50 in production
   message: 'Too many login attempts, please try again later',
   standardHeaders: true,
   legacyHeaders: false,

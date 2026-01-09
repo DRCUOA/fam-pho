@@ -52,8 +52,22 @@ const upload = multer({
   },
 });
 
+// Custom middleware to extract library_id from FormData before requireLibraryMember
+// Multer processes FormData and populates req.body, but we need library_id before that
+const extractLibraryIdFromFormData = async (req, res, next) => {
+  // For FormData uploads, library_id comes in the form data
+  // We need to parse it manually or use query parameter
+  // Using query parameter is simpler for this case
+  if (req.query.library_id) {
+    req.body = req.body || {};
+    req.body.library_id = req.query.library_id;
+  }
+  next();
+};
+
 // Upload single or multiple photos
-router.post('/photos/upload', requireAuth, requireLibraryMember, upload.array('photos', 50), async (req, res) => {
+// Note: library_id must be in query string (?library_id=1) because FormData is processed by multer
+router.post('/photos/upload', requireAuth, extractLibraryIdFromFormData, requireLibraryMember, upload.array('photos', 50), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });

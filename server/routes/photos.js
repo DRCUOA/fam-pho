@@ -96,8 +96,8 @@ router.put('/photos/:id', requireAuth, requirePhotoAccess, requireRole('contribu
 // Triage action
 router.post('/photos/:id/triage', requireAuth, requirePhotoAccess, requireRole('contributor'), [
   body('action').isIn(['keep', 'discard', 'duplicate']),
-  body('reason').optional().isString(),
-  body('duplicate_of').optional().isInt(),
+  body('reason').optional({ nullable: true, checkFalsy: true }).isString(),
+  body('duplicate_of').optional({ nullable: true, checkFalsy: true }).isInt(),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);

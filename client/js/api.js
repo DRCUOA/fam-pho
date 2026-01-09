@@ -6,6 +6,7 @@ class API {
   static async request(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`;
     const isFormData = options.body instanceof FormData;
+    const suppressErrors = options.suppressErrors || false;
     
     const config = {
       credentials: 'include',
@@ -33,7 +34,13 @@ class API {
     
     // Handle session expiration (401)
     if (response.status === 401) {
-      // Redirect to login
+      // For expected 401s (like checking auth status), don't log console errors
+      if (suppressErrors) {
+        const error = new Error('Not authenticated');
+        error.status = 401;
+        throw error;
+      }
+      // Redirect to login for unexpected 401s
       if (window.location.pathname !== '/') {
         window.location.href = '/';
       }
@@ -61,11 +68,16 @@ class API {
   }
 
   static async getCurrentUser() {
-    return this.request('/auth/me');
+    // Suppress errors for auth check - 401 is expected when not logged in
+    return this.request('/auth/me', { suppressErrors: true });
   }
 
   // Upload
   static async uploadPhotos(libraryId, files, onProgress = null) {
+    if (!files || files.length === 0) {
+      throw new Error('No files selected for upload');
+    }
+
     const formData = new FormData();
     formData.append('library_id', libraryId);
     files.forEach(file => {
@@ -73,7 +85,8 @@ class API {
     });
 
     // Use fetch directly for upload progress tracking
-    const url = `${API_BASE}/photos/upload`;
+    // Include library_id in query string because middleware needs it before multer processes FormData
+    const url = `${API_BASE}/photos/upload?library_id=${libraryId}`;
     const xhr = new XMLHttpRequest();
 
     return new Promise((resolve, reject) => {
@@ -82,6 +95,10 @@ class API {
           const percentComplete = (e.loaded / e.total) * 100;
           onProgress(percentComplete);
         }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
       });
 
       xhr.addEventListener('load', () => {
@@ -141,9 +158,14 @@ class API {
   }
 
   static async triagePhoto(id, action, reason = null, duplicateOf = null) {
+    const body = { action };
+    // Only include optional fields if they have values
+    if (reason) body.reason = reason;
+    if (duplicateOf) body.duplicate_of = duplicateOf;
+    
     return this.request(`/photos/${id}/triage`, {
       method: 'POST',
-      body: { action, reason, duplicate_of: duplicateOf },
+      body,
     });
   }
 

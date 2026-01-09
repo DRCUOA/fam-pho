@@ -95,7 +95,10 @@ async function init() {
       showLogin();
     }
   } catch (error) {
-    // Session expired or not logged in
+    // Session expired or not logged in - this is expected, don't log error
+    if (error.status !== 401) {
+      console.error('Init error:', error);
+    }
     showLogin();
   }
 }
@@ -323,7 +326,8 @@ function renderNextTasks(queues) {
     container.innerHTML = `
       <div class="text-center py-6 bg-neutral-50 rounded-lg border border-neutral-200">
         <i class="fa-solid fa-check-circle text-3xl text-green-500 mb-2"></i>
-        <p class="text-neutral-600">All tasks complete!</p>
+        <p class="text-neutral-900 font-medium mb-1">All tasks complete!</p>
+        <p class="text-sm text-neutral-600">No photos waiting in any queue.</p>
       </div>
     `;
     return;
@@ -975,25 +979,29 @@ function renderMetadataForm(photo) {
     
     <div>
       <label class="block text-sm font-medium text-neutral-900 mb-2">People</label>
-      <div id="people-tags" class="flex flex-wrap gap-2 mb-2 min-h-[44px] p-2 border rounded-lg">
-        ${currentPeople.map(p => `
+      <div id="people-list" class="flex flex-wrap gap-2 mb-2 min-h-[44px] p-2 border rounded-lg bg-neutral-50">
+        ${currentPeople.length > 0 ? currentPeople.map(p => `
           <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
             ${escapeHtml(p.name)}
-            <button onclick="removePersonTag(${p.id})" class="text-blue-600 hover:text-blue-800">
+            <button onclick="removePersonTag(${p.id})" 
+                    class="text-blue-600 hover:text-blue-800 min-w-[20px] min-h-[20px] flex items-center justify-center"
+                    type="button">
               <i class="fa-solid fa-times text-xs"></i>
             </button>
           </span>
-        `).join('')}
+        `).join('') : '<span class="text-neutral-500 text-sm">No people added yet</span>'}
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 items-center">
         <select id="person-select" class="flex-1 p-2 border rounded-lg min-h-[44px]">
-          <option value="">Add person...</option>
-          ${availablePeople.filter(p => !currentPeople.find(cp => cp.id === p.id)).map(p => `
+          <option value="">Select person to add...</option>
+          ${availablePeople && availablePeople.length > 0 ? availablePeople.filter(p => !currentPeople.find(cp => cp.id === p.id)).map(p => `
             <option value="${p.id}">${escapeHtml(p.name)}</option>
-          `).join('')}
+          `).join('') : '<option value="" disabled>No people available. Create people first.</option>'}
         </select>
-        <button onclick="addPersonTag()" 
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg min-h-[44px] min-w-[80px]">
+        <button id="btn-add-person" 
+                onclick="addPersonTag()" 
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg min-h-[44px] min-w-[80px] font-medium"
+                type="button">
           Add
         </button>
       </div>
@@ -1001,24 +1009,28 @@ function renderMetadataForm(photo) {
     
     <div>
       <label class="block text-sm font-medium text-neutral-900 mb-2">Tags</label>
-      <div id="tag-tags" class="flex flex-wrap gap-2 mb-2 min-h-[44px] p-2 border rounded-lg">
-        ${currentTags.map(t => `
+      <div id="tags-list" class="flex flex-wrap gap-2 mb-2 min-h-[44px] p-2 border rounded-lg bg-neutral-50">
+        ${currentTags.length > 0 ? currentTags.map(t => `
           <span class="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
             ${escapeHtml(t.name)}
-            <button onclick="removeTagTag(${t.id})" class="text-green-600 hover:text-green-800">
+            <button onclick="removeTagTag(${t.id})" 
+                    class="text-green-600 hover:text-green-800 min-w-[20px] min-h-[20px] flex items-center justify-center"
+                    type="button">
               <i class="fa-solid fa-times text-xs"></i>
             </button>
           </span>
-        `).join('')}
+        `).join('') : '<span class="text-neutral-500 text-sm">No tags added yet</span>'}
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 items-center">
         <input type="text" 
                id="tag-input" 
-               placeholder="Add tag..."
+               placeholder="Enter tag name..."
                class="flex-1 p-2 border rounded-lg min-h-[44px]"
                onkeypress="if(event.key==='Enter'){event.preventDefault();addTagTag();}">
-        <button onclick="addTagTag()" 
-                class="px-4 py-2 bg-green-600 text-white rounded-lg min-h-[44px] min-w-[80px]">
+        <button id="btn-add-tag" 
+                onclick="addTagTag()" 
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg min-h-[44px] min-w-[80px] font-medium"
+                type="button">
           Add
         </button>
       </div>
@@ -1040,13 +1052,29 @@ function renderMetadataForm(photo) {
 window.addPersonTag = async function() {
   const select = document.getElementById('person-select');
   const personId = select?.value;
-  if (!personId || !currentMetadataPhoto) return;
+  
+  if (!personId) {
+    showError('Please select a person to add');
+    return;
+  }
+  
+  if (!currentMetadataPhoto) {
+    showError('Photo not loaded');
+    return;
+  }
 
   try {
+    showLoading('Adding person...');
     await API.tagPhotoWithPerson(currentMetadataPhoto.id, parseInt(personId));
+    // Reset select
+    if (select) select.value = '';
+    // Reload photo metadata to refresh the form
     await loadPhotoMetadata(currentMetadataPhoto.id);
     await loadPeopleAndTags();
+    hideLoading();
+    showSuccess('Person added successfully');
   } catch (error) {
+    hideLoading();
     showError('Failed to add person: ' + error.message);
   }
 };
@@ -1065,14 +1093,29 @@ window.removePersonTag = async function(personId) {
 window.addTagTag = async function() {
   const input = document.getElementById('tag-input');
   const tagName = input?.value?.trim();
-  if (!tagName || !currentMetadataPhoto) return;
+  
+  if (!tagName) {
+    showError('Please enter a tag name');
+    return;
+  }
+  
+  if (!currentMetadataPhoto) {
+    showError('Photo not loaded');
+    return;
+  }
 
   try {
+    showLoading('Adding tag...');
     await API.addTagToPhoto(currentMetadataPhoto.id, tagName);
-    input.value = '';
+    // Clear input
+    if (input) input.value = '';
+    // Reload photo metadata to refresh the form
     await loadPhotoMetadata(currentMetadataPhoto.id);
     await loadPeopleAndTags();
+    hideLoading();
+    showSuccess('Tag added successfully');
   } catch (error) {
+    hideLoading();
     showError('Failed to add tag: ' + error.message);
   }
 };

@@ -17,6 +17,17 @@ class PhotoFile {
   }
 
   static async create(data) {
+    // Ensure orientation is a valid integer (1-8)
+    let orientation = data.orientation || 1;
+    if (typeof orientation === 'string') {
+      const numMatch = orientation.match(/\d+/);
+      orientation = numMatch ? parseInt(numMatch[0], 10) : 1;
+    }
+    orientation = parseInt(orientation, 10);
+    if (isNaN(orientation) || orientation < 1 || orientation > 8) {
+      orientation = 1; // Default to normal
+    }
+    
     const result = await pool.query(
       `INSERT INTO photo_files (
         photo_id, kind, storage_key, filename, mime_type, bytes,
@@ -33,7 +44,7 @@ class PhotoFile {
         data.bytes,
         data.width || null,
         data.height || null,
-        data.orientation || 1,
+        orientation,
         data.sha256,
         data.metadata_json ? JSON.stringify(data.metadata_json) : null,
       ]

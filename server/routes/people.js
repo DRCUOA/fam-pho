@@ -82,21 +82,16 @@ router.put('/people/:id', requireAuth, requireLibraryMember, requireRole('contri
 });
 
 // Tag photo with person
-router.post('/photos/:photoId/people/:personId', requireAuth, requireLibraryMember, requireRole('contributor'), async (req, res) => {
+router.post('/photos/:photoId/people/:personId', requireAuth, requirePhotoAccess, requireRole('contributor'), async (req, res) => {
   try {
-    const photo = await Photo.findById(req.params.photoId);
-    
-    if (!photo || photo.library_id !== req.libraryId) {
-      return res.status(404).json({ error: 'Photo not found' });
-    }
-
-    await Person.addToPhoto(photo.id, req.params.personId, req.user.id);
+    // requirePhotoAccess sets req.photo and req.libraryId
+    await Person.addToPhoto(req.photo.id, req.params.personId, req.user.id);
 
     await ActivityLog.log('photo.tag_person', {
       libraryId: req.libraryId,
       actorUserId: req.user.id,
       entityType: 'photo',
-      entityId: photo.id,
+      entityId: req.photo.id,
       details: { person_id: req.params.personId },
     });
 
@@ -108,21 +103,16 @@ router.post('/photos/:photoId/people/:personId', requireAuth, requireLibraryMemb
 });
 
 // Remove person tag from photo
-router.delete('/photos/:photoId/people/:personId', requireAuth, requireLibraryMember, requireRole('contributor'), async (req, res) => {
+router.delete('/photos/:photoId/people/:personId', requireAuth, requirePhotoAccess, requireRole('contributor'), async (req, res) => {
   try {
-    const photo = await Photo.findById(req.params.photoId);
-    
-    if (!photo || photo.library_id !== req.libraryId) {
-      return res.status(404).json({ error: 'Photo not found' });
-    }
-
-    await Person.removeFromPhoto(photo.id, req.params.personId);
+    // requirePhotoAccess sets req.photo and req.libraryId
+    await Person.removeFromPhoto(req.photo.id, req.params.personId);
 
     await ActivityLog.log('photo.untag_person', {
       libraryId: req.libraryId,
       actorUserId: req.user.id,
       entityType: 'photo',
-      entityId: photo.id,
+      entityId: req.photo.id,
       details: { person_id: req.params.personId },
     });
 

@@ -140,3 +140,25 @@ vite.config.ts.timestamp-*
 
 # .history folder
 .history
+
+# Photo storage directories
+storage/
+!storage/.gitkeep
+
+# Image files (photos uploaded to the system)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.tif
+*.webp
+*.heic
+*.heif
+*.raw
+*.cr2
+*.nef
+*.orf
+*.sr2
+*.arw

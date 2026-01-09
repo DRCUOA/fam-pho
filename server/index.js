@@ -104,14 +104,16 @@ app.get('/health', async (req, res) => {
 app.use(attachUser);
 
 // API routes
+// Note: More specific routes (like /photos/search) must be registered BEFORE
+// parameterized routes (like /photos/:id) to avoid route conflicts
 app.use('/api/auth', authRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api', searchRoutes); // Register before photoRoutes to handle /photos/search
 app.use('/api', photoRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', peopleRoutes);
 app.use('/api', tagsRoutes);
 app.use('/api', albumsRoutes);
-app.use('/api', searchRoutes);
 app.use('/api', workflowRoutes);
 
 // Legacy health check endpoint (kept for backward compatibility)

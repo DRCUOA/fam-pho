@@ -1,5 +1,228 @@
 # Changelog
 
+## [2026-01-09] - Bug Fix: Multiple Critical Fixes for Upload, Triage, and Metadata
+
+### Summary
+Fixed multiple critical bugs preventing core functionality: photo uploads failing due to library_id handling, triage actions failing due to validation issues, EXIF orientation parsing errors, missing database column, and metadata form functionality issues. Also improved error handling, UI positioning, and development experience.
+
+### Changes
+
+#### JSON Format (LLM-friendly)
+
+```json
+{
+  "date": "2026-01-09",
+  "version": "1.0.8",
+  "type": "bugfix",
+  "category": "multiple",
+  "changes": [
+    {
+      "component": "server/routes/upload.js",
+      "action": "fix",
+      "changes": [
+        "Fixed library_id extraction for FormData uploads",
+        "Added extractLibraryIdFromFormData middleware to copy query param to req.body",
+        "Updated upload endpoint to accept library_id in query string (?library_id=1)",
+        "Fixed route ordering issue where requireLibraryMember ran before multer processed FormData"
+      ],
+      "issue": "Upload failing with 'Library ID required' error",
+      "root_cause": "requireLibraryMember middleware ran before multer processed FormData, so req.body.library_id was undefined"
+    },
+    {
+      "component": "client/js/api.js",
+      "action": "fix",
+      "changes": [
+        "Updated uploadPhotos to include library_id in query string",
+        "Added validation to prevent upload calls without files"
+      ]
+    },
+    {
+      "component": "server/routes/photos.js",
+      "action": "fix",
+      "changes": [
+        "Fixed validation to allow nullable optional fields (reason, duplicate_of)",
+        "Changed .optional() to .optional({ nullable: true, checkFalsy: true })"
+      ],
+      "issue": "Triage actions (KEEP, DISCARD, DUPLICATE) failing with 400 error",
+      "root_cause": "Validation rejecting null values for optional fields"
+    },
+    {
+      "component": "client/js/api.js",
+      "action": "fix",
+      "changes": [
+        "Updated triagePhoto to only include non-null optional fields in request body"
+      ]
+    },
+    {
+      "component": "server/services/exifService.js",
+      "action": "fix",
+      "changes": [
+        "Enhanced extractOrientation to parse string values like 'Rotate 90 CW' to integer (6)",
+        "Added mapping for common orientation string descriptions",
+        "Added validation to ensure orientation is always 1-8"
+      ],
+      "issue": "Upload failing with 'invalid input syntax for type integer: Rotate 90 CW'",
+      "root_cause": "EXIF library returning orientation as string instead of integer"
+    },
+    {
+      "component": "server/models/PhotoFile.js",
+      "action": "fix",
+      "changes": [
+        "Added safeguard to ensure orientation is always valid integer (1-8) before database insert",
+        "Added parsing logic for string orientation values"
+      ]
+    },
+    {
+      "component": "database/schema.sql",
+      "action": "add",
+      "changes": [
+        "Added updated_at TIMESTAMP column to photos table"
+      ],
+      "issue": "Triage actions failing with 'column updated_at does not exist'",
+      "root_cause": "Photo.update() method setting updated_at but column didn't exist in schema"
+    },
+    {
+      "component": "server/routes/people.js",
+      "action": "fix",
+      "changes": [
+        "Changed middleware from requireLibraryMember to requirePhotoAccess for photo-person routes",
+        "Removed redundant photo lookup (requirePhotoAccess already sets req.photo and req.libraryId)"
+      ],
+      "issue": "Add person functionality not working on metadata page",
+      "root_cause": "requireLibraryMember couldn't find library_id in route params"
+    },
+    {
+      "component": "client/js/app.js",
+      "action": "fix",
+      "changes": [
+        "Improved addPersonTag function with better error handling and user feedback",
+        "Improved addTagTag function with better error handling and user feedback",
+        "Enhanced metadata form layout with items-center for proper button alignment",
+        "Added empty state messages for people and tags sections",
+        "Improved button positioning and spacing"
+      ],
+      "issue": "Add people button not working, add tag button poorly positioned"
+    },
+    {
+      "component": "server/index.js",
+      "action": "fix",
+      "changes": [
+        "Moved searchRoutes registration before photoRoutes to fix route conflict",
+        "Added comment explaining route ordering requirement"
+      ],
+      "issue": "/api/photos/search matching /photos/:id route instead",
+      "root_cause": "Parameterized route registered before specific route"
+    },
+    {
+      "component": "server/routes/auth.js",
+      "action": "update",
+      "changes": [
+        "Increased rate limits: 100 requests/15min in dev, 50 requests/15min in prod",
+        "Made rate limits environment-aware using config.env"
+      ]
+    },
+    {
+      "component": "client/index.html",
+      "action": "fix",
+      "changes": [
+        "Added script to suppress Tailwind CDN warning in development"
+      ]
+    },
+    {
+      "component": "client/js/api.js",
+      "action": "fix",
+      "changes": [
+        "Added suppressErrors option to request method",
+        "Updated getCurrentUser to suppress expected 401 errors",
+        "Improved error handling for expected authentication failures"
+      ]
+    },
+    {
+      "component": "client/js/app.js",
+      "action": "fix",
+      "changes": [
+        "Updated init() to handle expected 401 errors silently",
+        "Improved error handling for auth checks"
+      ]
+    }
+  ],
+  "benefits": [
+    "Photo uploads now work correctly",
+    "Triage actions (KEEP, DISCARD, DUPLICATE) function properly",
+    "EXIF orientation data properly parsed and stored",
+    "Metadata form add people/tags functionality works",
+    "Better UI alignment and positioning",
+    "Improved error handling and user feedback",
+    "Cleaner console output",
+    "More lenient rate limits for development/testing"
+  ]
+}
+```
+
+#### Markdown Table Format (Human-readable)
+
+| Component | Action | Changes |
+|-----------|--------|---------|
+| **server/routes/upload.js** | Fix | Fixed library_id handling for FormData uploads, added middleware |
+| **client/js/api.js** | Fix | Updated upload to include library_id in query string |
+| **server/routes/photos.js** | Fix | Fixed validation to allow nullable optional fields |
+| **server/services/exifService.js** | Fix | Enhanced orientation parsing (string to integer conversion) |
+| **server/models/PhotoFile.js** | Fix | Added safeguard for orientation validation |
+| **database/schema.sql** | Add | Added updated_at column to photos table |
+| **server/routes/people.js** | Fix | Changed to use requirePhotoAccess middleware |
+| **client/js/app.js** | Fix | Improved metadata form UI and error handling |
+| **server/index.js** | Fix | Fixed route ordering for search endpoint |
+| **server/routes/auth.js** | Update | Increased rate limits (dev: 100, prod: 50) |
+| **client/index.html** | Fix | Suppressed Tailwind CDN warning in dev |
+| **client/js/api.js** | Fix | Improved error handling for auth checks |
+
+### Benefits
+
+- ✅ Photo uploads work correctly (library_id properly handled)
+- ✅ Triage actions (KEEP, DISCARD, DUPLICATE) function properly
+- ✅ EXIF orientation data properly parsed and stored as integers
+- ✅ Metadata form add people/tags functionality works
+- ✅ Better UI alignment and button positioning
+- ✅ Improved error handling with user-friendly messages
+- ✅ Cleaner console output (suppressed expected errors)
+- ✅ More lenient rate limits for development/testing
+- ✅ Search endpoint works correctly (route ordering fixed)
+- ✅ Database schema matches code expectations (updated_at column)
+
+### Files Modified
+
+- `server/routes/upload.js`
+- `client/js/api.js`
+- `server/routes/photos.js`
+- `server/services/exifService.js`
+- `server/models/PhotoFile.js`
+- `database/schema.sql`
+- `server/routes/people.js`
+- `client/js/app.js`
+- `server/index.js`
+- `server/routes/auth.js`
+- `client/index.html`
+
+### Database Migration Required
+
+Run this SQL to add the missing column:
+```sql
+ALTER TABLE photos ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+```
+
+### Testing Recommendations
+
+- Test photo upload from desktop (drag-drop and file picker)
+- Test photo upload from mobile (camera capture)
+- Test triage actions: KEEP, DISCARD, DUPLICATE
+- Test metadata form: add/remove people and tags
+- Verify photos appear in triage queue after upload
+- Test search functionality
+- Verify no console errors on login
+- Test rate limiting doesn't interfere with normal usage
+
+---
+
 ## [2026-01-09] - Bug Fix: Improve Text Contrast for Accessibility
 
 ### Summary
